@@ -1,8 +1,8 @@
 ---
 
 <div align="center">
-  <h3>🌐 Portfolio</h3>
-  <p>My personal portfolio, showcasing my expertise and projects.</p>
+  <h3>🌐 Personal Website</h3>
+  <p>My personal website, showcasing my expertise and projects.</p>
 </div>
 
 ---
