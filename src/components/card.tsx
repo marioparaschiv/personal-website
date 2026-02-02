@@ -10,7 +10,7 @@ type CardProps = React.HTMLProps<HTMLDivElement> &
 	};
 
 const styles = {
-	container: cva('group/card relative flex bg-neutral-900/75 hover:shadow-black/5 hover:shadow-md backdrop-blur-lg p-6 rounded-2xl focus-visible:outline-none focus-visible:ring-none text-neutral-400 hover:scale-[1.03] transition-all duration-200 ease-out', {
+	container: cva('group/card relative flex bg-neutral-900/75 hover:shadow-black/5 hover:shadow-md backdrop-blur-lg p-6 rounded-2xl focus-visible:outline-hidden focus-visible:ring-none text-neutral-400 hover:scale-[1.03] transition-all duration-200 ease-out', {
 		variants: {
 			highlights: {
 				white: 'group-hover/card:border-white/50 group-hover/card:bg-white/20 selection:bg-neutral-400/50',
@@ -25,17 +25,17 @@ const styles = {
 		variants: {
 			highlights: {
 				white: 'bg-neutral-700/30 group-hover/card:opacity-100',
-				red: 'bg-gradient-to-tr from-rose-500/30 to-pink-700/30 group-hover/card:opacity-30',
-				blue: 'bg-gradient-to-tr from-blue-500/30 to-indigo-700/30 group-hover/card:opacity-30',
-				green: 'bg-gradient-to-tr from-green-500/30 to-emerald-700/30 group-hover/card:opacity-30',
-				purple: 'bg-gradient-to-tr from-purple-500/30 to-violet-700/30 group-hover/card:opacity-30',
+				red: 'bg-linear-to-tr from-rose-500/30 to-pink-700/30 group-hover/card:opacity-30',
+				blue: 'bg-linear-to-tr from-blue-500/30 to-indigo-700/30 group-hover/card:opacity-30',
+				green: 'bg-linear-to-tr from-green-500/30 to-emerald-700/30 group-hover/card:opacity-30',
+				purple: 'bg-linear-to-tr from-purple-500/30 to-violet-700/30 group-hover/card:opacity-30',
 			},
 		},
 		defaultVariants: {
 			highlights: 'white',
 		},
 	}),
-	border: cva('absolute inset-0 rounded-2xl focus-visible:outline-none ring-1 ring-white/10 focus-visible:ring-none ring-inset transition-all', {
+	border: cva('absolute inset-0 rounded-2xl focus-visible:outline-hidden ring-1 ring-white/10 focus-visible:ring-none ring-inset transition-all', {
 		variants: {
 			border: {
 				white: 'ring-white/5 group-hover/card:ring-white/15',

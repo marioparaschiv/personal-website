@@ -24,7 +24,7 @@ function Contact() {
 				<div className='flex flex-col items-center gap-4'>
 					<Typography
 						tag='h1'
-						className='bg-clip-text bg-gradient-to-br from-white to-neutral-500 font-semibold text-transparent'
+						className='bg-clip-text bg-linear-to-br from-white to-neutral-500 font-semibold text-transparent'
 					>
 						Contact
 					</Typography>
@@ -85,7 +85,7 @@ function ContactCard({ name, href, body, icon, color, className }: ContactCardPr
 	return (
 		<Link
 			tabIndex={0}
-			className='group focus-visible:outline-none focus-visible:ring-0'
+			className='group focus-visible:outline-hidden focus-visible:ring-0'
 			to={href}
 			target='_blank'
 		>

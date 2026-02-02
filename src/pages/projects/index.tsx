@@ -101,7 +101,7 @@ function Project(props: ArrayToTuple<typeof config.projects>) {
 					((event.target as HTMLImageElement).src = '/img/projects/fallback.png')
 				}
 			/>
-			<div className='z-10 absolute bg-gradient-to-t from-black/80 to-black/20 w-full h-full'>
+			<div className='z-10 absolute bg-linear-to-t from-black/80 to-black/20 w-full h-full'>
 				<div className='relative flex flex-col justify-center items-center h-full'>
 					<img
 						loading='eager'

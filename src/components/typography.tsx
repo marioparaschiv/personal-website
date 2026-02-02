@@ -51,9 +51,9 @@ export function Typography({
 			className={cn(
 				TypographyVariants({ tag, colour }),
 				className,
-				!margin && '!m-0',
-				!border && '!border-none',
-				!padding && '!p-0',
+				!margin && 'm-0!',
+				!border && 'border-none!',
+				!padding && 'p-0!',
 			)}
 		>
 			{children}

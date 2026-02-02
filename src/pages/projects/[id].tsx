@@ -51,7 +51,7 @@ function Project() {
 					<div className='ml-auto flex gap-4'>
 						{project.repository && (
 							<Link
-								className='flex justify-end items-center gap-2 px-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white'
+								className='flex justify-end items-center gap-2 px-2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white'
 								target='_blank'
 								to={project.repository}
 							>
@@ -61,7 +61,7 @@ function Project() {
 						)}
 						{project.url && (
 							<Link
-								className='flex justify-end items-center gap-2 px-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white'
+								className='flex justify-end items-center gap-2 px-2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white'
 								target='_blank'
 								to={project.url}
 							>
@@ -77,7 +77,7 @@ function Project() {
 							<img
 								loading='eager'
 								decoding='async'
-								className='shadow-none border-none rounded-2xl max-w-none h-24 object-cover outline-none scale-[1.02]'
+								className='shadow-none border-none rounded-2xl max-w-none h-24 object-cover outline-hidden scale-[1.02]'
 								src={project.icon.path}
 							/>
 							<div className='flex md:flex-col justify-between md:justify-start items-start gap-1 w-full md:w-auto'>
@@ -108,10 +108,10 @@ function Project() {
 										Successor
 									</Typography>
 									<Link
-										className='group focus-visible:outline-none focus-visible:ring-0'
+										className='group focus-visible:outline-hidden focus-visible:ring-0'
 										to={'/projects/' + successor.id}
 									>
-										<Card className='group-focus-visible:outline-none group-focus-visible:ring-2 group-focus-visible:ring-white min-w-fit cursor-pointer pointer-events-auto'>
+										<Card className='group-focus-visible:outline-hidden group-focus-visible:ring-2 group-focus-visible:ring-white min-w-fit cursor-pointer pointer-events-auto'>
 											<div className='flex items-center gap-4'>
 												<img
 													loading='eager'

@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import { cn } from '~/utils';
 
-const ButtonVariants = cva('inline-flex justify-center items-center disabled:opacity-50 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ring-offset-background font-medium text-sm transition-colors duration-200 disabled:pointer-events-none', {
+const ButtonVariants = cva('inline-flex justify-center items-center disabled:opacity-50 rounded-md focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white ring-offset-background font-medium text-sm transition-colors duration-200 disabled:pointer-events-none', {
 	variants: {
 		variant: {
 			default:

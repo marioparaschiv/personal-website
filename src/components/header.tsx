@@ -119,7 +119,7 @@ function Header(props: React.HTMLProps<HTMLElement>) {
 											ref={(r) => isSelected && (ref.current = r)}
 											className={cn(
 												'z-10 text-md cursor-pointer select-none transition-colors duration-200 font-semibold',
-												isSelected && '!to-neutral-100 p-4',
+												isSelected && 'to-neutral-100! p-4',
 											)}
 											onClick={(e) => (
 												e.preventDefault(), navigate(instance.path)

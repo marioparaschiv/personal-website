@@ -32,7 +32,7 @@ function About() {
 			<div className='slide-in-from-bottom-8 relative flex flex-col justify-center items-center gap-8 m-auto w-full md:w-auto animate-in duration-500 zoom-in-105 fade-in'>
 				<Typography
 					tag='h1'
-					className='bg-clip-text bg-gradient-to-br from-white to-neutral-500 font-semibold text-transparent'
+					className='bg-clip-text bg-linear-to-br from-white to-neutral-500 font-semibold text-transparent'
 				>
 					About
 				</Typography>
@@ -50,7 +50,7 @@ function About() {
 					<Item highlights='green' title='Work' icon={<Icons.Briefcase size={14} />}>
 						<span className='mb-5'>{config.about.work.join('\n')}</span>
 						<Button
-							className='flex-shrink-0 mt-auto w-full'
+							className='shrink-0 mt-auto w-full'
 							variant='secondary'
 							size='sm'
 							onClick={() => navigate('/contact')}

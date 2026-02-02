@@ -174,7 +174,7 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 	return (
 		<>
 			<a
-				className='group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white relative flex justify-center items-center border-neutral-800 bg-neutral-900 border rounded-xl lg:rounded-3xl overflow-hidden aspect-[16/9]'
+				className='group focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white relative flex justify-center items-center border-neutral-800 bg-neutral-900 border rounded-xl lg:rounded-3xl overflow-hidden aspect-[16/9]'
 				href={images[selected].src}
 			>
 				<img
@@ -190,12 +190,12 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 				/>
 			</a>
 			<Dialog.Root open={opened} onOpenChange={setOpened} {...props}>
-				<Dialog.Trigger tabIndex={-1} className='appearance-none ![all:unset]'>
+				<Dialog.Trigger tabIndex={-1} className='appearance-none [all:unset]!'>
 					<Card
 						aria-pressed={opened}
 						tabIndex={0}
 						role='button'
-						className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white'
+						className='focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white'
 						contentClassName='group flex items-center'
 						onClick={() => setOpened(!opened)}
 					>
@@ -224,7 +224,7 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 							<Dialog.Content asChild forceMount>
 								<animated.div
 									style={{ opacity: styles.opacity, scale: styles.scale }}
-									className='top-1/2 left-1/2 fixed w-full max-w-xl !-translate-x-1/2 !-translate-y-1/2'
+									className='top-1/2 left-1/2 fixed w-full max-w-xl -translate-x-1/2! -translate-y-1/2!'
 									onKeyDown={(event) => {
 										switch (event.key) {
 											case 'ArrowDown':
@@ -252,7 +252,7 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 											type='text'
 											autoFocus={false}
 											placeholder='Search...'
-											className='z-20 border-neutral-800 bg-transparent px-6 sm:px-7 py-3 sm:py-4 border-b w-full text-sm text-white placeholder:text-neutral-500 sm:text-base outline-none'
+											className='z-20 border-neutral-800 bg-transparent px-6 sm:px-7 py-3 sm:py-4 border-b w-full text-sm text-white placeholder:text-neutral-500 sm:text-base outline-hidden'
 											onChange={(event) => setSearch(event.target.value)}
 											value={search}
 										/>
@@ -311,7 +311,7 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 																	'/img/projects/fallback.png')
 															}
 															src={image.src}
-															className='shadow-none border-none max-w-none object-cover outline-none scale-[1.02]'
+															className='shadow-none border-none max-w-none object-cover outline-hidden scale-[1.02]'
 															style={{
 																position: 'absolute',
 																height: '100%',

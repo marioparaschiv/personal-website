@@ -26,7 +26,7 @@ function Home() {
 						background: `radial-gradient(${isMedium ? 50 : 30}% ${isMedium ? 50 : 30}% at 50% 50%, rgba(255, 255, 255, 0.6) 0%, rgba(0, 0, 0, 0) 100%)`,
 					}}
 				/>
-				<div className='slide-in-from-bottom-8 bg-clip-text bg-gradient-to-br from-white to-neutral-500 zoom-in-105 font-bold text-5xl text-center text-transparent sm:text-6xl animate-in duration-500 fade-in-0'>
+				<div className='slide-in-from-bottom-8 bg-clip-text bg-linear-to-br from-white to-neutral-500 zoom-in-105 font-bold text-5xl text-center text-transparent sm:text-6xl animate-in duration-500 fade-in-0'>
 					{config.name}
 				</div>
 				<div className='slide-in-from-bottom-8 zoom-in-105 px-8 sm:px-0 font-medium text-center text-neutral-400 text-sm sm:text-base animate-in duration-700 fade-in'>
