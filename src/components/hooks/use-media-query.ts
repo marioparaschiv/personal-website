@@ -24,7 +24,7 @@ export default function useMediaQuery(query: string): boolean {
 	});
 
 	return state;
-};
+}
 
 export function usePrefersDark(): boolean {
 	return useMediaQuery('(prefers-color-scheme: dark)');

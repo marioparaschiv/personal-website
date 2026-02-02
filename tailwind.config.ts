@@ -9,7 +9,7 @@ const config: Config = {
 		'./app/**/*.{ts,tsx}',
 		'./src/**/*.{ts,tsx}',
 		'./information/**/*.{ts,tsx,json}',
-		'config.json'
+		'config.json',
 	],
 	theme: {
 		container: {
@@ -21,7 +21,7 @@ const config: Config = {
 		},
 		extend: {
 			backgroundImage: {
-				'grid': 'url(/img/grid.webp)'
+				grid: 'url(/img/grid.webp)',
 			},
 			colors: {
 				border: 'hsl(var(--border))',
@@ -69,10 +69,10 @@ const config: Config = {
 				sm: 'calc(var(--radius) - 4px)',
 			},
 			screens: {
-				'short': { raw: '(max-height: 1080px)' }
-			}
-		}
-	}
+				short: { raw: '(max-height: 1080px)' },
+			},
+		},
+	},
 };
 
 export default config;

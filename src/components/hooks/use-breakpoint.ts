@@ -1,4 +1,5 @@
 import resolveConfig from 'tailwindcss/resolveConfig';
+
 import { useMediaQuery } from '~/components/hooks';
 import file from '~/../tailwind.config';
 

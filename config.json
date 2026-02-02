@@ -20,13 +20,7 @@
 			"href": "https://twitter.com/mariovparaschiv"
 		}
 	},
-	"technologiesOrder": [
-		"language",
-		"database",
-		"framework",
-		"tooling",
-		"library"
-	],
+	"technologiesOrder": ["language", "database", "framework", "tooling", "library"],
 	"about": {
 		"information": [
 			"Hi! I'm Mario, a self-taught Software Engineer based in London, specialising in TypeScript, Go, Next.js, React.js, and SSR / SPA / SaaS applications.",
@@ -65,109 +59,6 @@
 		]
 	},
 	"projects": [
-		{
-			"name": "Kiwa",
-			"id": "kiwa",
-			"type": "Website",
-			"repository": "https://github.com/marioparaschiv/kiwa",
-			"url": "https://kiwasushi.vercel.app/",
-			"timeFrame": "Sep 2023 - Apr 2024",
-			"badge": {
-				"styles": "bg-green-600/30 border-green-600/40 text-green-600",
-				"text": "Production"
-			},
-			"overview": [
-				"Kiwa is an Asian fusion restaurant based in Aix-en-Provence, France.",
-				"",
-				"Built with React.js and the popular UI library @shadcn/ui, the website features a monochrome colour scheme to draw visitors' attention to the restaurant's catering services."
-			],
-			"responsibilities": [
-				"I was the sole developer of this project.",
-				"",
-				"I was responsible for every aspect of the website, including but not limited to: design, functionality, performance, layout, and accessibility.",
-				"",
-				"The website makes use of a proprietary internationalisation implementation. It also uses the new Chrome View Transitions API, allowing seamless transitions such as switching between dark and light modes."
-			],
-			"technologies": [
-				"React",
-				"TypeScript",
-				"Tailwind",
-				"Vite",
-				"Git",
-				"Radix UI",
-				"React Router",
-				"SWC",
-				"Zod",
-				"shadcn/ui"
-			],
-			"icon": {
-				"path": "/img/projects/kiwa/icon.png",
-				"styles": "ml-2"
-			},
-			"thumbnail": "/img/projects/kiwa/thumbnail.png",
-			"images": [
-				{
-					"src": "/img/projects/kiwa/thumbnail.png",
-					"title": "Overview",
-					"subtitle": "Preview of the two main pages of the website."
-				},
-				{
-					"src": "/img/projects/kiwa/landing-dark.png",
-					"title": "Landing Page - Dark",
-					"subtitle": "A preview of the landing page in dark mode."
-				},
-				{
-					"src": "/img/projects/kiwa/landing-light.png",
-					"title": "Landing Page - Light",
-					"subtitle": "A preview of the landing page in light mode."
-				},
-				{
-					"src": "/img/projects/kiwa/menu-dark.png",
-					"title": "Menu - Dark",
-					"subtitle": "A preview of the menu page in dark mode."
-				},
-				{
-					"src": "/img/projects/kiwa/menu-light.png",
-					"title": "Menu - Light",
-					"subtitle": "A preview of the menu page in light mode."
-				},
-				{
-					"src": "/img/projects/kiwa/reservation-dark.png",
-					"title": "Reservation - Dark",
-					"subtitle": "A preview of the reservation page in dark mode."
-				},
-				{
-					"src": "/img/projects/kiwa/reservation-light.png",
-					"title": "Reservation - Light",
-					"subtitle": "A preview of the reservation page in light mode."
-				},
-				{
-					"src": "/img/projects/kiwa/faq-dark.png",
-					"title": "FAQ - Dark",
-					"subtitle": "A preview of the frequently asked questions page in dark mode."
-				},
-				{
-					"src": "/img/projects/kiwa/faq-light.png",
-					"title": "FAQ - Light",
-					"subtitle": "A preview of the frequently asked questions page in light mode."
-				},
-				{
-					"src": "/img/projects/kiwa/mobile.png",
-					"title": "Mobile",
-					"subtitle": "Mobile compatibility for the website."
-				},
-				{
-					"src": "/img/projects/kiwa/localization.png",
-					"title": "Localization",
-					"subtitle": "Proprietary dynamic localization."
-				},
-				{
-					"src": "/img/projects/kiwa/filtering.png",
-					"title": "Filtering",
-					"subtitle": "Advanced menu item filtering."
-				}
-			]
-		},
 		{
 			"name": "Unbound",
 			"id": "unbound",

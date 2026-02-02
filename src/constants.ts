@@ -4,37 +4,37 @@ export const Technologies = [
 	{
 		icon: Icons.TypeScript,
 		name: 'TypeScript',
-		type: 'language'
+		type: 'language',
 	},
 	{
 		icon: Icons.JavaScript,
 		name: 'JavaScript',
-		type: 'language'
+		type: 'language',
 	},
 	{
 		icon: Icons.Go,
 		name: 'Go',
-		type: 'language'
+		type: 'language',
 	},
 	{
 		icon: Icons.ObjectiveC,
 		name: 'Objective C',
-		type: 'language'
+		type: 'language',
 	},
 	{
 		icon: Icons.Rust,
 		name: 'Rust',
-		type: 'language'
+		type: 'language',
 	},
 	{
 		icon: Icons.Kotlin,
 		name: 'Kotlin',
-		type: 'language'
+		type: 'language',
 	},
 	{
 		icon: Icons.Zod,
 		name: 'Zod',
-		type: 'library'
+		type: 'library',
 	},
 	{
 		icon: Icons.ShadCN,
@@ -54,101 +54,101 @@ export const Technologies = [
 	{
 		icon: Icons.PostgreSQL,
 		name: 'Postgres',
-		type: 'database'
+		type: 'database',
 	},
 	{
 		icon: Icons.Redis,
 		name: 'Redis',
-		type: 'database'
+		type: 'database',
 	},
 	{
 		icon: Icons.MongoDB,
 		name: 'Mongo',
-		type: 'database'
+		type: 'database',
 	},
 	{
 		icon: Icons.Firebase,
 		name: 'Firebase',
-		type: 'database'
+		type: 'database',
 	},
 	{
 		icon: Icons.SQLite,
 		name: 'SQLite',
-		type: 'database'
+		type: 'database',
 	},
 	{
 		icon: Icons.React,
 		name: 'React',
-		type: 'framework'
+		type: 'framework',
 	},
 	{
 		icon: Icons.Solid,
 		name: 'SolidJS',
-		type: 'framework'
+		type: 'framework',
 	},
 	{
 		icon: Icons.React,
 		name: 'React Native',
-		type: 'framework'
+		type: 'framework',
 	},
 	{
 		icon: Icons.Next,
 		name: 'Next',
-		type: 'framework'
+		type: 'framework',
 	},
 	{
 		icon: Icons.Tailwind,
 		name: 'Tailwind',
-		type: 'framework'
+		type: 'framework',
 	},
 	{
 		icon: Icons.Svelte,
 		name: 'Svelte',
-		type: 'framework'
+		type: 'framework',
 	},
 	{
 		icon: Icons.SCSS,
 		name: 'SCSS',
-		type: 'framework'
+		type: 'framework',
 	},
 	{
 		icon: Icons.Electron,
 		name: 'Electron',
-		type: 'framework'
+		type: 'framework',
 	},
 	{
 		icon: Icons.Express,
 		name: 'Express',
-		type: 'framework'
+		type: 'framework',
 	},
 	{
 		icon: Icons.Git,
 		name: 'Git',
-		type: 'tooling'
+		type: 'tooling',
 	},
 	{
 		icon: Icons.Docker,
 		name: 'Docker',
-		type: 'tooling'
+		type: 'tooling',
 	},
 	{
 		icon: Icons.AWS,
 		name: 'AWS',
-		type: 'tooling'
+		type: 'tooling',
 	},
 	{
 		icon: Icons.Vite,
 		name: 'Vite',
-		type: 'tooling'
+		type: 'tooling',
 	},
 	{
 		icon: Icons.Rollup,
 		name: 'Rollup',
-		type: 'tooling'
+		type: 'tooling',
 	},
 	{
 		icon: Icons.SWC,
 		name: 'SWC',
-		type: 'tooling'
-	}
+		type: 'tooling',
+	},
 ];

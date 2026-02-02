@@ -1,13 +1,12 @@
 ---
-
 <div align="center">
-  <h3>🌐 Personal Website</h3>
-  <p>My personal website, showcasing my expertise and projects.</p>
+<h3>🌐 Personal Website</h3>
+<p>My personal website, showcasing my expertise and projects.</p>
 </div>
-
 ---
 
 ## Stack
+
 - TypeScript
 - React.js
 - Tailwind CSS
@@ -20,4 +19,5 @@
 - Embla Carousel
 
 ## Licensing
+
 See [LICENSE](/LICENSE).

@@ -25,13 +25,12 @@
 		"noUnusedParameters": true,
 		"noFallthroughCasesInSwitch": true,
 		"verbatimModuleSyntax": true,
-		"baseUrl": "src",
 		"paths": {
 			"~/*": [
-				"*"
+				"./src/*"
 			],
 			"@*": [
-				"../*"
+				"./*"
 			]
 		}
 	}

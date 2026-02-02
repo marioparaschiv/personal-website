@@ -1,8 +1,10 @@
 /// <reference types='vite/client' />
 
-import * as CustomIcons from '~/components/icons';
-import * as Icons from 'lucide-react';
 import '@total-typescript/ts-reset';
+
+import * as Icons from 'lucide-react';
+
+import * as CustomIcons from '~/components/icons';
 
 declare global {
 	/* Components */
@@ -46,6 +48,6 @@ declare global {
 
 	/* Utilities */
 	type ArrayToTuple<T extends ReadonlyArray<any>> = keyof {
-		[K in (T extends ReadonlyArray<infer U> ? U : never)]: T[K]
+		[K in T extends ReadonlyArray<infer U> ? U : never]: T[K];
 	};
 }
