@@ -32,13 +32,15 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 
 	const listRef = useRef<HTMLDivElement | null>(null);
 	const ref = useRef<HTMLDivElement | null>(null);
+	const initialMount = useRef(true);
 
-	const animation = {
-		left: useSpringValue(0),
-		top: useSpringValue(0),
-		width: useSpringValue(0),
-		height: useSpringValue(0),
-	};
+	const springTop = useSpringValue(0);
+	const springWidth = useSpringValue(0);
+	const springHeight = useSpringValue(0);
+	const animation = useMemo(
+		() => ({ top: springTop, width: springWidth, height: springHeight }),
+		[springTop, springWidth, springHeight],
+	);
 
 	const transitions = useTransition(opened, {
 		from: {
@@ -84,8 +86,6 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 	const animateProperties = useCallback((target?: HTMLElement, immediate: boolean = false) => {
 		if (!target) return;
 
-		const rect = target.getBoundingClientRect();
-
 		animation.top[immediate ? 'set' : 'start'](target.offsetTop, {
 			config: {
 				duration: 250,
@@ -93,14 +93,14 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 			},
 		});
 
-		animation.width[immediate ? 'set' : 'start'](rect.width, {
+		animation.width[immediate ? 'set' : 'start'](target.offsetWidth, {
 			config: {
 				duration: 150,
 				easing: easings.easeInOutQuad,
 			},
 		});
 
-		animation.height[immediate ? 'set' : 'start'](rect.height, {
+		animation.height[immediate ? 'set' : 'start'](target.offsetHeight, {
 			config: {
 				duration: 150,
 				easing: easings.easeInOutQuad,
@@ -136,23 +136,30 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 			setHovered(index);
 			scrollToIndex(index);
 		},
-		[items],
+		[scrollToIndex],
 	);
 
 	useEffect(() => {
 		if (!ref.current) return;
+
 		animateProperties(ref.current);
-	}, [opened, ref.current, hovered]);
+	}, [hovered]);
+
+	useEffect(() => {
+		if (!opened) {
+			initialMount.current = true;
+		}
+	}, [opened]);
 
 	const moveDown = useCallback(() => {
 		setLocked(true);
 		changeIndex(hovered < items.length - 1 ? hovered + 1 : 0);
-	}, [hovered]);
+	}, [hovered, items.length, changeIndex]);
 
 	const moveUp = useCallback(() => {
 		setLocked(true);
 		changeIndex(hovered > 0 ? hovered - 1 : items.length - 1);
-	}, [hovered]);
+	}, [hovered, items.length, changeIndex]);
 
 	useEffect(() => {
 		function onResize() {
@@ -174,7 +181,7 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 	return (
 		<>
 			<a
-				className='group focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white relative flex justify-center items-center border-neutral-800 bg-neutral-900 border rounded-xl lg:rounded-3xl overflow-hidden aspect-[16/9]'
+				className='group relative flex justify-center items-center bg-neutral-900 border border-neutral-800 rounded-xl lg:rounded-3xl focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white aspect-video overflow-hidden'
 				href={images[selected].src}
 			>
 				<img
@@ -186,7 +193,7 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 						((event.target as HTMLImageElement).src = '/img/projects/fallback.png')
 					}
 					sizes='100vw'
-					className='absolute w-full max-w-none h-full text-transparent object-cover scale-[1.02]'
+					className='absolute w-full max-w-none h-full object-cover text-transparent scale-[1.02]'
 				/>
 			</a>
 			<Dialog.Root open={opened} onOpenChange={setOpened} {...props}>
@@ -200,14 +207,14 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 						onClick={() => setOpened(!opened)}
 					>
 						<div className='flex flex-col gap-1 overflow-hidden'>
-							<span className='font-semibold text-sm text-white sm:text-base md:text-lg lg:text-xl truncate'>
+							<span className='font-semibold text-white text-sm sm:text-base md:text-lg lg:text-xl truncate'>
 								{images[selected].title}
 							</span>
 							<span className='text-neutral-300 text-xs md:text-sm'>
 								{images[selected].subtitle}
 							</span>
 						</div>
-						<div className='group-hover:text-white ml-auto transition-colors'>
+						<div className='ml-auto group-hover:text-white transition-colors'>
 							<ArrowUpDown size={24} />
 						</div>
 					</Card>
@@ -247,18 +254,18 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 										}
 									}}
 								>
-									<div className='border-neutral-700 bg-neutral-900 shadow-lg mx-6 sm:mx-0 border rounded-2xl'>
+									<div className='bg-neutral-900 shadow-lg mx-6 sm:mx-0 border border-neutral-700 rounded-2xl'>
 										<input
 											type='text'
 											autoFocus={false}
 											placeholder='Search...'
-											className='z-20 border-neutral-800 bg-transparent px-6 sm:px-7 py-3 sm:py-4 border-b w-full text-sm text-white placeholder:text-neutral-500 sm:text-base outline-hidden'
+											className='z-20 bg-transparent px-6 sm:px-7 py-3 sm:py-4 border-neutral-800 border-b outline-hidden w-full text-white placeholder:text-neutral-500 text-sm sm:text-base'
 											onChange={(event) => setSearch(event.target.value)}
 											value={search}
 										/>
 										<div
 											ref={listRef}
-											className='relative z-0 flex flex-col px-3 sm:px-4 py-2 sm:py-3 w-full h-full max-h-80 overflow-auto'
+											className='z-0 relative flex flex-col px-3 sm:px-4 py-2 sm:py-3 w-full h-full max-h-80 overflow-auto'
 										>
 											{/* Highlight */}
 											{items.length !== 0 && (
@@ -280,12 +287,15 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 											{items.map((image, index) => (
 												<div
 													key={image.src + index}
-													className='relative z-10 flex items-center gap-3 p-1.5 sm:p-2 cursor-pointer'
-													ref={function (r) {
-														if (hovered === index) {
-															ref.current = r;
-														} else {
-															return null;
+													className='z-10 relative flex items-center gap-3 p-1.5 sm:p-2 cursor-pointer'
+													ref={(r) => {
+														if (!r || hovered !== index) return;
+
+														ref.current = r;
+
+														if (initialMount.current) {
+															initialMount.current = false;
+															animateProperties(r, true);
 														}
 													}}
 													onClick={() => {
@@ -299,7 +309,7 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 														}
 													}}
 												>
-													<div className='relative bg-neutral-900 rounded-md w-24 sm:w-32 h-[54px] sm:h-[72px] overflow-hidden'>
+													<div className='relative bg-neutral-900 rounded-md w-24 sm:w-32 h-13.5 sm:h-18 overflow-hidden'>
 														<img
 															alt={`Media ${image.src}`}
 															loading='lazy'
@@ -311,7 +321,7 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 																	'/img/projects/fallback.png')
 															}
 															src={image.src}
-															className='shadow-none border-none max-w-none object-cover outline-hidden scale-[1.02]'
+															className='shadow-none border-none outline-hidden max-w-none object-cover scale-[1.02]'
 															style={{
 																position: 'absolute',
 																height: '100%',
@@ -322,7 +332,7 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 														></img>
 													</div>
 													<div className='flex-1'>
-														<div className='font-medium text-sm text-white sm:text-md'>
+														<div className='font-medium text-white sm:text-md text-sm'>
 															{image.title}
 														</div>
 														<div className='text-neutral-500 text-xs'>
@@ -333,7 +343,7 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 											))}
 										</div>
 										{(footer.enabled ?? true) && (
-											<div className='flex justify-between items-center border-neutral-800 px-6 sm:px-7 py-3 sm:py-4 border-t w-full'>
+											<div className='flex justify-between items-center px-6 sm:px-7 py-3 sm:py-4 border-neutral-800 border-t w-full'>
 												{footer.subtitle && (
 													<div className='font-medium text-neutral-500 text-xs sm:text-sm'>
 														{footer.subtitle}

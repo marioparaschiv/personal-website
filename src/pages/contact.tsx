@@ -1,8 +1,8 @@
 import { ExternalLink, Github, Linkedin, Mail, Twitter } from 'lucide-react';
+import { cva } from 'class-variance-authority';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import config from '@config.json';
-import { cva } from 'class-variance-authority';
 
 import Typography from '~/components/typography';
 import Card from '~/components/card';
@@ -65,20 +65,23 @@ function Contact() {
 }
 
 const styles = {
-	icon: cva('flex justify-center items-center bg-neutral-500/20 p-1.5 border border-neutral-300/50 rounded-full w-8 h-8 transition-all', {
-		variants: {
-			highlights: {
-				red: 'group-hover:border-rose-500/50 group-hover:bg-rose-400/20 group-hover:text-rose-500',
-				green: 'group-hover:border-green-500/50 group-hover:bg-green-400/20 group-hover:text-green-500',
-				blue: 'group-hover:border-blue-500/50 group-hover:bg-blue-400/20 group-hover:text-blue-500',
-				purple: 'group-hover:border-purple-500/50 group-hover:bg-purple-400/20 group-hover:text-purple-500',
-				white: 'group-hover:border-neutral-500/50 group-hover:bg-neutral-400/20 group-hover:text-neutral-500',
+	icon: cva(
+		'flex justify-center items-center bg-neutral-500/20 p-1.5 border border-neutral-300/50 rounded-full w-8 h-8 transition-all',
+		{
+			variants: {
+				highlights: {
+					red: 'group-hover:border-rose-500/50 group-hover:bg-rose-400/20 group-hover:text-rose-500',
+					green: 'group-hover:border-green-500/50 group-hover:bg-green-400/20 group-hover:text-green-500',
+					blue: 'group-hover:border-blue-500/50 group-hover:bg-blue-400/20 group-hover:text-blue-500',
+					purple: 'group-hover:border-purple-500/50 group-hover:bg-purple-400/20 group-hover:text-purple-500',
+					white: 'group-hover:border-neutral-500/50 group-hover:bg-neutral-400/20 group-hover:text-neutral-500',
+				},
+			},
+			defaultVariants: {
+				highlights: 'purple',
 			},
 		},
-		defaultVariants: {
-			highlights: 'purple',
-		},
-	}),
+	),
 };
 
 function ContactCard({ name, href, body, icon, color, className }: ContactCardProps) {

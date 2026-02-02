@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect, type ElementRef } from 'react';
 import { animated, easings, useSpring } from '@react-spring/web';
+import { cva } from 'class-variance-authority';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { ChevronDown } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import config from '@config.json';
-import { cva } from 'class-variance-authority';
 import React from 'react';
 
 import TechnologiesList from '~/components/technologies';
@@ -71,20 +71,23 @@ function About() {
 }
 
 const styles = {
-	icon: cva('flex justify-center items-center bg-neutral-500/20 p-1 border border-neutral-300/50 rounded-full w-6 h-6 transition-all', {
-		variants: {
-			highlights: {
-				red: 'group-hover/card:border-rose-500/50 group-hover/card:bg-rose-400/20 group-hover/card:text-rose-500',
-				green: 'group-hover/card:border-green-500/50 group-hover/card:bg-green-400/20 group-hover/card:text-green-500',
-				blue: 'group-hover/card:border-blue-500/50 group-hover/card:bg-blue-400/20 group-hover/card:text-blue-500',
-				purple: 'group-hover/card:border-purple-500/50 group-hover/card:bg-purple-400/20 group-hover/card:text-purple-500',
-				white: 'group-hover/card:border-neutral-500/50 group-hover/card:bg-neutral-400/20 group-hover/card:text-neutral-500',
+	icon: cva(
+		'flex justify-center items-center bg-neutral-500/20 p-1 border border-neutral-300/50 rounded-full w-6 h-6 transition-all',
+		{
+			variants: {
+				highlights: {
+					red: 'group-hover/card:border-rose-500/50 group-hover/card:bg-rose-400/20 group-hover/card:text-rose-500',
+					green: 'group-hover/card:border-green-500/50 group-hover/card:bg-green-400/20 group-hover/card:text-green-500',
+					blue: 'group-hover/card:border-blue-500/50 group-hover/card:bg-blue-400/20 group-hover/card:text-blue-500',
+					purple: 'group-hover/card:border-purple-500/50 group-hover/card:bg-purple-400/20 group-hover/card:text-purple-500',
+					white: 'group-hover/card:border-neutral-500/50 group-hover/card:bg-neutral-400/20 group-hover/card:text-neutral-500',
+				},
+			},
+			defaultVariants: {
+				highlights: 'purple',
 			},
 		},
-		defaultVariants: {
-			highlights: 'purple',
-		},
-	}),
+	),
 };
 
 type ItemProps = React.ComponentProps<typeof Card> & {
