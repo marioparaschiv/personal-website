@@ -2,9 +2,9 @@ import { useState, useRef, useEffect, type ElementRef } from 'react';
 import { animated, easings, useSpring } from '@react-spring/web';
 import { cva } from 'class-variance-authority';
 import { useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { ChevronDown } from 'lucide-react';
 import * as Icons from 'lucide-react';
+import { Helmet } from 'react-helmet';
 import config from '@config.json';
 import React from 'react';
 
@@ -50,7 +50,7 @@ function About() {
 					<Item highlights='green' title='Work' icon={<Icons.Briefcase size={14} />}>
 						<span className='mb-5'>{config.about.work.join('\n')}</span>
 						<Button
-							className='shrink-0 mt-auto w-full'
+							className='mt-auto w-full shrink-0'
 							variant='secondary'
 							size='sm'
 							onClick={() => navigate('/contact')}

@@ -1,7 +1,7 @@
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowTopRightIcon } from '@radix-ui/react-icons';
 import { ArrowLeft, LinkIcon } from 'lucide-react';
-import { Helmet } from 'react-helmet-async';
+import { Helmet } from 'react-helmet';
 import config from '@config.json';
 import { useEffect } from 'react';
 
@@ -37,18 +37,18 @@ function Project() {
 	const successor = project.successor && config.projects.find((p) => p.id === project.successor);
 
 	return (
-		<div className='flex min-h-[calc(100dvh-5dvh)] mt-10 justify-center items-center p-0 overflow-clip'>
+		<div className='flex justify-center items-center mt-10 p-0 min-h-[calc(100dvh-5dvh)] overflow-clip'>
 			<Helmet>
 				<title>
 					{project.name} » {config.name}
 				</title>
 			</Helmet>
-			<div className='flex flex-col items-center gap-16 m-auto zoom-in-105 w-full animate-in duration-500 fade-in-0 md:container'>
+			<div className='flex flex-col items-center gap-16 m-auto w-full animate-in duration-500 zoom-in-105 fade-in-0 md:container'>
 				<div className='flex justify-between items-center px-8 w-full'>
 					<Button className='gap-2' size='sm' onClick={() => navigate('/projects')}>
 						<ArrowLeft size={12} /> Browse
 					</Button>
-					<div className='ml-auto flex gap-4'>
+					<div className='flex gap-4 ml-auto'>
 						{project.repository && (
 							<Link
 								className='flex justify-end items-center gap-2 px-2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white'
@@ -77,7 +77,7 @@ function Project() {
 							<img
 								loading='eager'
 								decoding='async'
-								className='shadow-none border-none rounded-2xl max-w-none h-24 object-cover outline-hidden scale-[1.02]'
+								className='shadow-none border-none rounded-2xl outline-hidden max-w-none h-24 object-cover scale-[1.02]'
 								src={project.icon.path}
 							/>
 							<div className='flex md:flex-col justify-between md:justify-start items-start gap-1 w-full md:w-auto'>
@@ -103,7 +103,7 @@ function Project() {
 								<div className='flex flex-col gap-1.5 md:gap-3 lg:gap-5'>
 									<Typography
 										tag='h1'
-										className='font-bold text-base text-white md:text-lg lg:text-2xl'
+										className='font-bold text-white text-base md:text-lg lg:text-2xl'
 									>
 										Successor
 									</Typography>
@@ -123,7 +123,7 @@ function Project() {
 													<div className='flex flex-col'>
 														<Typography
 															tag='h1'
-															className='font-bold text-sm text-white sm:text-base md:text-lg lg:text-lg'
+															className='font-bold text-white text-sm sm:text-base md:text-lg lg:text-lg'
 														>
 															{successor.name}
 														</Typography>
@@ -165,13 +165,13 @@ function Project() {
 									>
 										Solutions
 									</Typography>
-									<div className='grid grid-cols-[repeat(auto-fill,minmax(110px,1fr))] gap-2 font-medium text-neutral-400 text-sm lg:text-base truncate whitespace-pre-wrap'>
+									<div className='gap-2 grid grid-cols-[repeat(auto-fill,minmax(110px,1fr))] font-medium text-neutral-400 text-sm lg:text-base truncate whitespace-pre-wrap'>
 										{project.solutions.map((solution, index) => (
 											<div className='flex gap-2'>
 												<Link
 													key={solution.url + index}
 													to={solution.url}
-													className='focus-visible:ring-0 focus-visible:outline-2 focus-visible:outline-white text-blue-500 animate-underline'
+													className='focus-visible:outline-2 focus-visible:outline-white focus-visible:ring-0 text-blue-500 animate-underline'
 												>
 													{solution.name}
 												</Link>
@@ -183,7 +183,7 @@ function Project() {
 							<div className='flex flex-col gap-1.5 md:gap-3 lg:gap-5'>
 								<Typography
 									tag='h1'
-									className='font-bold text-base text-white md:text-lg lg:text-2xl'
+									className='font-bold text-white text-base md:text-lg lg:text-2xl'
 								>
 									Responsibilities
 								</Typography>
@@ -198,7 +198,7 @@ function Project() {
 								<div className='flex flex-col gap-1.5 md:gap-3 lg:gap-5'>
 									<Typography
 										tag='h1'
-										className='font-bold text-base text-white md:text-lg lg:text-2xl'
+										className='font-bold text-white text-base md:text-lg lg:text-2xl'
 									>
 										Technologies
 									</Typography>
@@ -212,7 +212,7 @@ function Project() {
 							)}
 						</div>
 					</div>
-					<div className='flex flex-col gap-3 mt-4 md:mt-0 col-span-5 md:col-span-3 cursor-pointer'>
+					<div className='flex flex-col gap-3 col-span-5 md:col-span-3 mt-4 md:mt-0 cursor-pointer'>
 						<Media images={project.images} footer={{ subtitle: project.name }} />
 					</div>
 				</div>

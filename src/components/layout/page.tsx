@@ -1,6 +1,6 @@
 import { memo, type ComponentProps } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { Outlet } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 
 import Header from '~/components/header';
 import { cn } from '~/utils';
@@ -36,7 +36,7 @@ function Page({
 			<div
 				{...props}
 				className={cn(
-					'overflow-hidden md:-mt-[5dvh] flex flex-col gap-[10px] before:pointer-events-none before:fixed before:inset-0 before:-top-64 before:bg-grid before:bg-top before:bg-no-repeat before:opacity-70',
+					'before:-top-64 before:fixed before:inset-0 flex flex-col gap-[10px] before:bg-grid before:bg-no-repeat before:bg-top before:opacity-70 md:-mt-[5dvh] overflow-hidden before:pointer-events-none',
 					className,
 				)}
 			>

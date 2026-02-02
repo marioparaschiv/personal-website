@@ -1,7 +1,7 @@
 import { ExternalLink, Github, Linkedin, Mail, Twitter } from 'lucide-react';
 import { cva } from 'class-variance-authority';
-import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import config from '@config.json';
 
 import Typography from '~/components/typography';

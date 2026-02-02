@@ -1,8 +1,8 @@
 import { WheelGesturesPlugin } from 'embla-carousel-wheel-gestures';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { ArrowRight } from 'lucide-react';
+import { Helmet } from 'react-helmet';
 import config from '@config.json';
 
 import {
@@ -25,11 +25,11 @@ export const headerOrder = 2;
 
 function Projects() {
 	return (
-		<div className='flex min-h-[calc(100dvh-5dvh)] justify-center items-center p-0 overflow-clip'>
+		<div className='flex justify-center items-center p-0 min-h-[calc(100dvh-5dvh)] overflow-clip'>
 			<Helmet>
 				<title>Projects » {config.name}</title>
 			</Helmet>
-			<div className='slide-in-from-bottom-8 flex flex-col items-center gap-16 zoom-in-105 animate-in duration-500 fade-in-0'>
+			<div className='slide-in-from-bottom-8 flex flex-col items-center gap-16 animate-in duration-500 zoom-in-105 fade-in-0'>
 				{/* {import.meta.env.DEV ? */}{' '}
 				<Carousel
 					plugins={[WheelGesturesPlugin()]}
@@ -89,11 +89,11 @@ function Project(props: ArrayToTuple<typeof config.projects>) {
 	}, []);
 
 	return (
-		<div className='relative flex justify-center items-center border-neutral-800 bg-neutral-900 border rounded-3xl overflow-hidden'>
+		<div className='relative flex justify-center items-center bg-neutral-900 border border-neutral-800 rounded-3xl overflow-hidden'>
 			<img
 				loading='eager'
 				decoding='async'
-				className='h-[30rem] md:h-[35rem]  select-none object-cover'
+				className='h-[30rem] md:h-[35rem] object-cover select-none'
 				alt={props.name}
 				style={{ width }}
 				src={props.thumbnail}
@@ -106,7 +106,7 @@ function Project(props: ArrayToTuple<typeof config.projects>) {
 					<img
 						loading='eager'
 						decoding='async'
-						className={cn('h-12 mb-4 rounded-md', props.icon.styles)}
+						className={cn('mb-4 rounded-md h-12', props.icon.styles)}
 						src={props.icon.path}
 					/>
 					<div className='flex flex-col justify-center items-center mb-2'>
@@ -165,7 +165,7 @@ function CarouselDots() {
 				<div
 					key={index}
 					className={cn(
-						'w-3 h-3 cursor-pointer rounded-full bg-neutral-800',
+						'bg-neutral-800 rounded-full w-3 h-3 cursor-pointer',
 						idx === index && 'bg-white',
 					)}
 					onClick={() => carousel.api?.scrollTo(index)}

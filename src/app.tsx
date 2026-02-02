@@ -1,5 +1,4 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
 
 import { Page } from '~/components/layout';
 import * as Pages from '~/pages';
@@ -17,11 +16,7 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-	return (
-		<HelmetProvider>
-			<RouterProvider router={router} />
-		</HelmetProvider>
-	);
+	return <RouterProvider router={router} />;
 }
 
 export default App;
