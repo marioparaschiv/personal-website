@@ -2,9 +2,11 @@
 
 import '@total-typescript/ts-reset';
 
-import * as Icons from 'lucide-react';
-
-import * as CustomIcons from '~/components/icons';
+declare module '*.mdx' {
+	import type { ComponentType } from 'react';
+	const Component: ComponentType;
+	export default Component;
+}
 
 declare global {
 	/* Components */
@@ -14,28 +16,6 @@ declare global {
 		element: React.ComponentType;
 		path: string;
 	};
-
-	/* Pages */
-	interface AboutItemDetails {
-		icon: keyof typeof Icons | keyof typeof CustomIcons;
-		highlights: CardHighlights;
-		text?: string[];
-		items?: AboutItemGridItem[];
-		buttons?: AboutItemButton[];
-	}
-
-	interface AboutItemButton {
-		text: string;
-		onClick?: {
-			type: 'redirect';
-			url?: string;
-		};
-	}
-
-	interface AboutItemGridItem {
-		name: string;
-		icon: keyof typeof Icons & keyof typeof ItemIcons;
-	}
 
 	interface ContactCardProps {
 		name: string;

@@ -1,5 +1,5 @@
 import useEmblaCarousel, { type UseEmblaCarouselType } from 'embla-carousel-react';
-import { ArrowLeftIcon, ArrowRightIcon } from '@radix-ui/react-icons';
+import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react';
 import type { EmblaCarouselType } from 'embla-carousel';
 import { useCallback, useRef } from 'react';
 import * as React from 'react';
@@ -95,6 +95,7 @@ const Carousel = React.forwardRef<
 				const value = 1 - Math.abs(diffToTarget * tweenFactor.current);
 				const opacity = numberWithinRange(value, 0.6, 1).toString();
 				const scale = numberWithinRange(value, 0.85, 1).toString();
+				const bracketOffset = numberWithinRange(1 - (value - 0.85) / 0.15, 0, 1);
 
 				const nodes = api.slideNodes();
 
@@ -121,6 +122,7 @@ const Carousel = React.forwardRef<
 
 				node.style.opacity = opacity;
 				node.style.transform = modifiers.join(' ');
+				node.style.setProperty('--bracket-offset', `${(bracketOffset - 1) * 24}px`);
 			}
 		}
 	}, []);
@@ -227,7 +229,7 @@ const CarouselContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HT
 		const { carouselRef, orientation } = useCarousel();
 
 		return (
-			<div ref={carouselRef} className='overflow-hidden'>
+			<div ref={carouselRef}>
 				<div
 					ref={ref}
 					className={cn(
@@ -275,7 +277,10 @@ const CarouselPrevious = React.forwardRef<HTMLButtonElement, React.ComponentProp
 				ref={ref}
 				variant={variant}
 				size={size}
-				className={cn('h-10 w-10 rounded-full', className)}
+				className={cn(
+					'bg-transparent hover:bg-white/10 border-white/30 rounded-none w-10 h-10',
+					className,
+				)}
 				disabled={!canScrollPrev}
 				onClick={scrollPrev}
 				{...props}
@@ -297,7 +302,10 @@ const CarouselNext = React.forwardRef<HTMLButtonElement, React.ComponentProps<ty
 				ref={ref}
 				variant={variant}
 				size={size}
-				className={cn('h-10 w-10 rounded-full', className)}
+				className={cn(
+					'bg-transparent hover:bg-white/10 border-white/30 rounded-none w-10 h-10',
+					className,
+				)}
 				disabled={!canScrollNext}
 				onClick={scrollNext}
 				{...props}

@@ -1,6 +1,6 @@
 {
 	"name": "Mario Paraschiv",
-	"subtext": "Self-taught Software Engineer specializing in TypeScript.",
+	"subtext": "The details matter. I handle them.",
 	"location": "London, United Kingdom",
 	"links": {
 		"email": {
@@ -20,48 +20,11 @@
 			"href": "https://twitter.com/marioparaschiv"
 		}
 	},
-	"technologiesOrder": ["language", "database", "framework", "tooling", "library"],
-	"about": {
-		"information": [
-			"Hi! I'm Mario, a self-taught Software Engineer based in London, specialising in TypeScript, Go, Next.js, React.js, and SSR / SPA / SaaS applications.",
-			"",
-			"I spend my free time tinkering with existing software to extend its functionality, along with learning how tools and frameworks work internally to better optimise my work."
-		],
-		"values": [
-			"Providing transparency, excellence, integrity, and solving my client's problems is my top priority.",
-			"",
-			"I hold myself and my work to the highest standards. When you work with me, you can expect exceptional quality in every aspect — the little details paint the bigger picture."
-		],
-		"work": [
-			"Feel free to reach out if you are interested in working with me. I would be happy to explore any opportunity that aligns with my values.",
-			"",
-			"Whether you have a project in mind, would like something done the right way, wish to discuss potential collaborations, or simply want to connect, please do not hesitate to get in contact."
-		],
-		"technologies": [
-			"TypeScript",
-			"JavaScript",
-			"Go",
-			"Postgres",
-			"Redis",
-			"Mongo",
-			"Firebase",
-			"SQLite",
-			"React",
-			"Next",
-			"Tailwind",
-			"Svelte",
-			"SCSS",
-			"Electron",
-			"Express",
-			"Git",
-			"Docker",
-			"AWS"
-		]
-	},
 	"projects": [
 		{
 			"name": "Unbound",
 			"id": "unbound",
+			"hueShift": 235,
 			"type": "Mobile Application",
 			"timeFrame": "Jan 2023 - Present",
 			"badge": {
@@ -70,24 +33,11 @@
 			},
 			"repository": "https://github.com/unbound-app",
 			"url": "https://unbound.rip",
-			"overview": [
-				"Unbound is an open-source modification designed to add functionality to the Discord mobile app with unprecedented levels of customization. Offering a rich array of features from plug-ins to themes, fonts, and icon packs with a write once run everywhere approach, Unbound redefines the user experience, providing a platform agnostic experience for personalization unlike any other."
-			],
-			"responsibilities": [
-				"As the lead developer and owner of Unbound, I handled key technical aspects of the project, including reverse-engineering the Discord mobile app to enable features like plug-ins, themes, and icon packs.",
-				"",
-				"I developed loaders for code execution, created bundle patchers for app executables, and ensured compatibility across platforms. I worked with team members on the client bundle, making design decisions to enhance both user and developer experience. I also managed the team to ensure we delivered a consistent product across all platforms."
-			],
 			"technologies": [
 				"TypeScript",
-				"Git",
-				"React",
-				"Tailwind",
-				"Rollup",
 				"Objective C",
-				"Rust",
-				"SolidJS",
 				"Kotlin",
+				"React Native",
 				"Go"
 			],
 			"icon": {
@@ -104,8 +54,41 @@
 			]
 		},
 		{
+			"name": "Telecord",
+			"id": "telecord",
+			"hueShift": 60,
+			"type": "Web Application",
+			"timeFrame": "Nov 2024 - Present",
+			"badge": {
+				"styles": "bg-green-600/30 border-green-600/40 text-green-600",
+				"text": "Production"
+			},
+			"repository": null,
+			"url": null,
+			"technologies": [
+				"TypeScript",
+				"React",
+				"Postgres",
+				"Redis",
+				"Docker"
+			],
+			"icon": {
+				"path": "/img/projects/telecord/icon.png",
+				"styles": ""
+			},
+			"thumbnail": "/img/projects/telecord/thumbnail.png",
+			"images": [
+				{
+					"src": "/img/projects/telecord/thumbnail.png",
+					"title": "Application Overview",
+					"subtitle": "Preview of the unified messaging feed."
+				}
+			]
+		},
+		{
 			"name": "Enmity",
 			"id": "enmity",
+			"hueShift": 10,
 			"type": "Mobile Application",
 			"repository": "https://github.com/enmity-mod",
 			"url": "https://enmity.unbound.rip/",
@@ -114,15 +97,7 @@
 				"styles": "bg-orange-600/30 border-orange-600/40 text-orange-600",
 				"text": "Superseded"
 			},
-			"overview": [
-				"Enmity is an open-source modification designed to add functionality to the Discord's iOS mobile app. Enmity offers both plug-ins to themes, providing a foundation for personalization and extended functionality."
-			],
 			"successor": "unbound",
-			"responsibilities": [
-				"I was responsible for key components of Enmity such as the client itself along with the loader.",
-				"",
-				"Moreover, I handled the key part of Enmity's functionality, the loader. This tool injects the client JavaScript bundle, allowing access to Discord APIs and setting up a base for plugin developers."
-			],
 			"technologies": [
 				"TypeScript",
 				"JavaScript",

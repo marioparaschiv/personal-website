@@ -11,7 +11,7 @@ type CardProps = React.HTMLProps<HTMLDivElement> &
 
 const styles = {
 	container: cva(
-		'group/card relative flex bg-neutral-900/75 hover:shadow-black/5 hover:shadow-md backdrop-blur-lg p-6 rounded-2xl focus-visible:outline-hidden focus-visible:ring-none text-neutral-400 hover:scale-[1.03] transition-all duration-200 ease-out',
+		'group/card relative flex bg-neutral-900/75 hover:shadow-black/5 hover:shadow-md backdrop-blur-lg p-6 rounded-none focus-visible:outline-hidden focus-visible:ring-none text-neutral-400 hover:scale-[1.03] transition-all duration-200 ease-out',
 		{
 			variants: {
 				highlights: {
@@ -25,7 +25,7 @@ const styles = {
 		},
 	),
 	highlights: cva(
-		'absolute inset-0 opacity-0 saturate-200 rounded-2xl transition duration-200 ease-linear',
+		'absolute inset-0 opacity-0 saturate-200 rounded-none transition duration-200 ease-linear',
 		{
 			variants: {
 				highlights: {
@@ -42,7 +42,7 @@ const styles = {
 		},
 	),
 	border: cva(
-		'absolute inset-0 rounded-2xl focus-visible:outline-hidden ring-1 ring-white/10 focus-visible:ring-none ring-inset transition-all',
+		'absolute inset-0 rounded-none focus-visible:outline-hidden ring-1 ring-white/10 focus-visible:ring-none ring-inset transition-all',
 		{
 			variants: {
 				border: {

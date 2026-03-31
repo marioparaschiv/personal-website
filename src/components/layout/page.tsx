@@ -1,13 +1,12 @@
-import { memo, type ComponentProps } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
+import { memo } from 'react';
 
-import Header from '~/components/header';
+import { DarkVeilProvider } from '~/components/effects/dark-veil';
 import { cn } from '~/utils';
 
 interface PageProps {
-	headerProps?: ComponentProps<typeof Header>;
-	bodyProps?: React.HTMLProps<HTMLDivElement>;
+	containerProps?: React.HTMLProps<HTMLDivElement>;
 	before?: JSX.Element;
 	after?: JSX.Element;
 	className?: string;
@@ -20,30 +19,22 @@ function Page({
 	after,
 	children,
 	className,
-	headerProps,
-	bodyProps,
+	containerProps,
 	...props
 }: React.PropsWithChildren<PageProps>) {
 	return (
-		<div {...bodyProps}>
-			<Helmet>
-				<title>
-					{[section && `${section} »`, 'Mario Paraschiv'].filter(Boolean).join(' ')}
-				</title>
-			</Helmet>
-			<Header key='header' {...(headerProps ?? {})} />
-			{before ? before : ''}
-			<div
-				{...props}
-				className={cn(
-					'before:-top-64 before:fixed before:inset-0 flex flex-col gap-[10px] before:bg-grid before:bg-no-repeat before:bg-top before:opacity-70 md:-mt-[5dvh] overflow-hidden before:pointer-events-none',
-					className,
-				)}
-			>
-				<Outlet />
+		<DarkVeilProvider>
+			<div {...containerProps}>
+				<Helmet>
+					<title>
+						{[section && `${section} »`, 'Mario Paraschiv'].filter(Boolean).join(' ')}
+					</title>
+				</Helmet>
+				<div {...props} className={cn('flex flex-col gap-2.5 overflow-hidden', className)}>
+					<Outlet />
+				</div>
 			</div>
-			{after ? after : ''}
-		</div>
+		</DarkVeilProvider>
 	);
 }
 

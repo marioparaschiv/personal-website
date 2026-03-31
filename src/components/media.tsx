@@ -1,7 +1,7 @@
 import { animated, easings, useSpringValue, useTransition } from '@react-spring/web';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import * as Dialog from '@radix-ui/react-dialog';
 import { ArrowUpDown } from 'lucide-react';
+import { Dialog } from 'radix-ui';
 
 import Card from '~/components/card';
 
@@ -181,7 +181,7 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 	return (
 		<>
 			<a
-				className='group relative flex justify-center items-center bg-neutral-900 border border-neutral-800 rounded-xl lg:rounded-3xl focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white aspect-video overflow-hidden'
+				className='group relative flex justify-center items-center bg-neutral-900 border border-neutral-800 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white aspect-video overflow-hidden'
 				href={images[selected].src}
 			>
 				<img
@@ -197,7 +197,7 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 				/>
 			</a>
 			<Dialog.Root open={opened} onOpenChange={setOpened} {...props}>
-				<Dialog.Trigger tabIndex={-1} className='appearance-none [all:unset]!'>
+				<Dialog.Trigger tabIndex={-1} className='w-full! appearance-none'>
 					<Card
 						aria-pressed={opened}
 						tabIndex={0}
@@ -206,7 +206,7 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 						contentClassName='group flex items-center'
 						onClick={() => setOpened(!opened)}
 					>
-						<div className='flex flex-col gap-1 overflow-hidden'>
+						<div className='flex flex-col items-start gap-1 overflow-hidden'>
 							<span className='font-semibold text-white text-sm sm:text-base md:text-lg lg:text-xl truncate'>
 								{images[selected].title}
 							</span>
@@ -254,7 +254,7 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 										}
 									}}
 								>
-									<div className='bg-neutral-900 shadow-lg mx-6 sm:mx-0 border border-neutral-700 rounded-2xl'>
+									<div className='bg-neutral-900 shadow-lg mx-6 sm:mx-0 border border-neutral-700'>
 										<input
 											type='text'
 											autoFocus={false}
@@ -270,7 +270,7 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 											{/* Highlight */}
 											{items.length !== 0 && (
 												<animated.div
-													className='z-10 absolute bg-white/10 rounded-lg sm:rounded-xl w-full h-[87.5px]'
+													className='z-10 absolute bg-white/10 w-full h-[87.5px]'
 													style={{
 														width: animation.width,
 														height: animation.height,
@@ -309,7 +309,7 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 														}
 													}}
 												>
-													<div className='relative bg-neutral-900 rounded-md w-24 sm:w-32 h-13.5 sm:h-18 overflow-hidden'>
+													<div className='relative bg-neutral-900 w-24 sm:w-32 h-13.5 sm:h-18 overflow-hidden'>
 														<img
 															alt={`Media ${image.src}`}
 															loading='lazy'
@@ -352,7 +352,7 @@ function Media({ images, footer = {}, ...props }: MediaProps) {
 												{(footer.hint ?? true) && (
 													<div className='flex items-center gap-2 font-medium text-white text-xs sm:text-sm'>
 														View Media
-														<div className='flex justify-center items-center bg-white/5 px-2 pt-1 rounded-md text-xs'>
+														<div className='flex justify-center items-center bg-white/5 px-2 pt-1 text-xs'>
 															↵
 														</div>
 													</div>

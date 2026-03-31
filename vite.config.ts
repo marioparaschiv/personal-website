@@ -3,15 +3,17 @@ import compression from 'vite-plugin-compression';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import paths from 'vite-tsconfig-paths';
+import mdx from '@mdx-js/rollup';
 import path from 'node:path';
 
 // https://vitejs.dev/config/
 const config: UserConfig = {
 	plugins: [
+		{ enforce: 'pre', ...mdx() },
 		tailwindcss(),
 		paths() as PluginOption,
 		compression(),
-		react({ babel: { plugins: ['babel-plugin-react-compiler'] } }),
+		react(),
 	],
 	build: {
 		minify: 'esbuild',

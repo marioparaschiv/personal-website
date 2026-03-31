@@ -1,35 +1,8 @@
 @import 'tailwindcss';
+
 @import 'tw-animate-css';
 
 @source '../config.json';
-
-@font-face {
-	font-family: 'Open Runde';
-	src: url(/fonts/OpenRunde-Regular.woff2) format('woff2');
-	font-weight: 400;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: 'Open Runde';
-	src: url(/fonts/OpenRunde-Medium.woff2) format('woff2');
-	font-weight: 500;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: 'Open Runde';
-	src: url(/fonts/OpenRunde-Semibold.woff2) format('woff2');
-	font-weight: 600;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: 'Open Runde';
-	src: url(/fonts/OpenRunde-Bold.woff2) format('woff2');
-	font-weight: 700;
-	font-display: swap;
-}
 
 @theme inline {
 	--color-border: hsl(var(--border));
@@ -93,7 +66,7 @@
 		transition: transform 0.25s ease-out;
 	}
 
-	&:hover::after {
+	& :hover::after {
 		transform: scaleX(1);
 		transform-origin: bottom left;
 	}
@@ -104,22 +77,17 @@
 		--background: 0 0% 0%;
 		--foreground: 0 0% 98%;
 		--foreground-secondary: 240 5% 64.9%;
-
 		--card: 240 10% 3.9%;
 		--card-foreground: 0 0% 98%;
-
 		--floating: 240 10% 3.9%;
 		--floating-foreground: 0 0% 98%;
-
 		--primary: 0 0% 98%;
 		--primary-foreground: 240 0% 7.5%;
 		--secondary: 0 0% 12.5%;
 		--secondary-foreground: 0 0% 98%;
 		--muted: 240 3.7% 15.9%;
-
 		--accent: 240 3.7% 15.9%;
 		--accent-foreground: 0 0% 98%;
-
 		--destructive: 0 60.2% 60.2%;
 		--destructive-foreground: 0 0% 98%;
 		--border: 240 0% 15.9%;
@@ -128,17 +96,14 @@
 		--cursor: 0 100% 100%;
 		--scrollbar: 0 0% 15%;
 		--brand: 228.9 77.4% 73.9%;
-
 		--radius: 10px;
-
 		--breakpoint-sm: 40rem;
 		--breakpoint-md: 48rem;
 		--breakpoint-lg: 64rem;
 		--breakpoint-xl: 80rem;
 		--breakpoint-2xl: 96rem;
-
 		color-scheme: dark;
-		font-family: 'Open Runde', system-ui, Avenir, Helvetica, Arial, sans-serif;
+		font-family: 'Manrope', system-ui, Avenir, Helvetica, Arial, sans-serif;
 		box-sizing: border-box;
 	}
 }
@@ -151,6 +116,7 @@
 	html,
 	body {
 		@apply bg-background text-foreground;
+		overscroll-behavior: none;
 	}
 
 	/* Fix over-scroll on iOS */
@@ -167,15 +133,14 @@
 	}
 }
 
-::-webkit-scrollbar {
-	width: 7.5px;
-	height: 7.5px;
-	background: transparent;
+body {
+	overscroll-behavior: none;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
 }
 
-::-webkit-scrollbar-thumb {
-	background: hsl(var(--scrollbar));
-	border-radius: 10px;
+body::-webkit-scrollbar {
+	display: none;
 }
 
 svg {
