@@ -74,7 +74,7 @@ precision lowp float;
 uniform vec2 uResolution;
 uniform vec2 uViewport;
 uniform float uTime;
-uniform float uHueShift;
+uniform vec2 uHueRot;
 uniform float uNoise;
 uniform float uScan;
 uniform float uScanFreq;
@@ -88,10 +88,9 @@ float rand(vec2 c){return fract(sin(dot(c,vec2(12.9898,78.233)))*43758.5453);}
 mat3 rgb2yiq=mat3(0.299,0.587,0.114,0.596,-0.274,-0.322,0.211,-0.523,0.312);
 mat3 yiq2rgb=mat3(1.0,0.956,0.621,1.0,-0.272,-0.647,1.0,-1.106,1.703);
 
-vec3 hueShiftRGB(vec3 col,float deg){
+vec3 hueShiftRGB(vec3 col,vec2 rot){
     vec3 yiq=rgb2yiq*col;
-    float rad=radians(deg);
-    float cosh=cos(rad),sinh=sin(rad);
+    float cosh=rot.x,sinh=rot.y;
     vec3 yiqShift=vec3(yiq.x,yiq.y*cosh-yiq.z*sinh,yiq.y*sinh+yiq.z*cosh);
     return clamp(yiq2rgb*yiqShift,0.0,1.0);
 }
@@ -128,7 +127,7 @@ void mainImage(out vec4 fragColor,in vec2 fragCoord){
 void main(){
     vec2 centered=gl_FragCoord.xy+(uResolution-uViewport)*0.5;
     vec4 col;mainImage(col,centered);
-    col.rgb=hueShiftRGB(col.rgb,uHueShift);
+    col.rgb=hueShiftRGB(col.rgb,uHueRot);
     float scanline_val=sin(gl_FragCoord.y*uScanFreq)*0.5+0.5;
     col.rgb*=1.-(scanline_val*scanline_val)*uScan;
     col.rgb+=(rand(gl_FragCoord.xy+uTime)-0.5)*uNoise;
@@ -161,7 +160,7 @@ function DarkVeil(props: DarkVeilProps) {
 			uTime: new THREE.Uniform(0),
 			uResolution: new THREE.Uniform(new THREE.Vector2(0, 0)),
 			uViewport: new THREE.Uniform(new THREE.Vector2(0, 0)),
-			uHueShift: new THREE.Uniform(0),
+			uHueRot: new THREE.Uniform(new THREE.Vector2(1, 0)),
 			uNoise: new THREE.Uniform(noiseIntensity),
 			uScan: new THREE.Uniform(scanlineIntensity),
 			uScanFreq: new THREE.Uniform(scanlineFrequency),
@@ -173,7 +172,14 @@ function DarkVeil(props: DarkVeilProps) {
 		const mesh = new THREE.Mesh(geometry, material);
 		scene.add(mesh);
 
-		let currentHue = props.target();
+		// Blend the hue as a point on the colour wheel instead of an angle, so a
+		// transition cuts straight across to the new colour rather than sweeping
+		// through every hue in between.
+		const toVector = (deg: number) => {
+			const rad = (deg * Math.PI) / 180;
+			return new THREE.Vector2(Math.cos(rad), Math.sin(rad));
+		};
+		const currentHue = toVector(props.target());
 
 		function updateViewportSize() {
 			const dpr = renderer.getPixelRatio();
@@ -197,12 +203,8 @@ function DarkVeil(props: DarkVeilProps) {
 		three.startLoop((_delta, elapsed) => {
 			uniforms.uTime.value = elapsed * speed;
 
-			const targetVal = props.target();
-			let diff = targetVal - currentHue;
-			if (diff > 180) diff -= 360;
-			else if (diff < -180) diff += 360;
-			currentHue = (currentHue + diff * 0.05 + 360) % 360;
-			uniforms.uHueShift.value = currentHue;
+			currentHue.lerp(toVector(props.target()), 0.05);
+			uniforms.uHueRot.value.copy(currentHue);
 
 			uniforms.uNoise.value = noiseIntensity;
 			uniforms.uScan.value = scanlineIntensity;

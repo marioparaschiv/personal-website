@@ -36,6 +36,12 @@ images:
       subtitle: A preview of per-plugin hand crafted settings.
 ---
 
-Enmity brings plugins and themes to Discord on iOS, which Apple's ecosystem makes deliberately difficult. It works by injecting at the native level, which keeps things stable, and ships with an API that lets the community write their own plugins and themes.
+Enmity brought plugins and themes to Discord on iOS, where Apple makes that kind of thing deliberately hard. **It pioneered the architecture that made mods possible on Discord's React Native app.** A native tweak loads a JavaScript bundle into Discord before the app starts, and that bundle reaches into Discord's own modules so plugins can patch them.
 
-Its successor is Unbound, which takes the same idea and expands it to Android.
+Enmity kept things lean: plugins, themes and a small API for the community to build on, on iOS only. It didn't need more than that to prove the approach worked.
+
+Its successor, Unbound, is built on the same foundation. It grows it into a full platform with icon packs, fonts, a Marketplace, crash recovery and Android support.
+
+## My part
+
+I wrote the client and the loader. The loader is the native piece that injects the client bundle into Discord, gives it access to Discord's APIs and sets up the base that plugin developers built on.

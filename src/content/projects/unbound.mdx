@@ -2,13 +2,13 @@
 name: Unbound
 id: unbound
 order: 0
-hueShift: 235
+hueShift: 248
 type: Mobile Application
 timeFrame: 'Jan 2023 - Present'
 badge:
-    styles: bg-blue-600/30 border-blue-600/40 text-blue-600
-    text: In Development
-repository: https://github.com/unbound-app
+    styles: bg-rose-500/15 border-rose-400/40 text-rose-200
+    text: Production
+repository: https://github.com/marioparaschiv/unbound
 url: https://unbound.rip
 icon:
     path: /img/projects/unbound/icon.png
@@ -20,6 +20,24 @@ images:
       subtitle: Preview of the many features Unbound has to offer.
 ---
 
-Discord doesn't let you customize its mobile app. No plugins, no themes, nothing. Unbound is an open-source mod that changes that, running on iOS and Android from a single codebase.
+Discord doesn't let you customize its mobile app. Unbound is **an open-source mod that does, on iPhone, iPad and Android**.
 
-Users can install community plugins, swap themes, and change fonts and icons. The goal is write-once, run-everywhere, so everything works the same on both platforms.
+**You can install custom themes, plugins, icon packs and fonts, and set your own chat background.** Themes recolor the whole app. Plugins add features or change how parts of Discord work. Icon packs swap out the icons, and you can pick a separate font for normal text and for headings. Chat backgrounds can be any image you like, and you can blur or fade them so messages stay readable. Themes, plugins and icon packs come from a Marketplace inside Discord's settings, where each one is reviewed before it's listed. Turn one off and Discord goes back to exactly how it was.
+
+You can sign in with Discord to **sync your add-ons and settings across devices**. Unbound also **blocks Discord's analytics and Sentry error reporting**, and doesn't track anything itself.
+
+## When things break
+
+Discord updates break mods regularly, so Unbound plans for it. An add-on that crashes the app on two launches in a row gets turned off automatically. If it's worse than that, shaking your phone opens a recovery toolbox that works even when Unbound fails to load.
+
+## How it works
+
+- A native loader starts Unbound's JavaScript before Discord's. It's a shared C++ core, shipped as an Objective-C tweak on iOS and a Kotlin Xposed module on Android.
+- The client hooks Discord's Metro module registry, so add-ons can find any internal module or component and patch it.
+- Plugins that need native code get a bridge limited to the capabilities they asked for.
+
+iOS is the main platform. Android works, but support is still early.
+
+## My part
+
+I own and lead Unbound. Most of my time goes into the low-level side: reverse-engineering Discord's mobile app, the native loaders, and the patchers that build Unbound into the IPA and APK. With the team I also built the developer tooling (the ubd CLI, a live debugger and a Hermes bytecode pipeline) and unbound.rip, where add-ons are submitted and reviewed.

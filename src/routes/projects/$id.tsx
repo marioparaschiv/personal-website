@@ -156,14 +156,12 @@ function Project() {
 							<section class='mb-12'>
 								<Show
 									when={Content()}
+									keyed
 									fallback={
 										<p class='text-center text-neutral-500'>Coming soon.</p>
 									}
 								>
-									{(Mdx) => {
-										const C = Mdx();
-										return <C components={mdxComponents} />;
-									}}
+									{(C) => <C components={mdxComponents} />}
 								</Show>
 							</section>
 
@@ -172,12 +170,7 @@ function Project() {
 									<h2 class='mb-4 font-semibold text-white text-2xl tracking-tight'>
 										Gallery
 									</h2>
-									<Media
-										images={p().images}
-										footer={{
-											subtitle: `${p().images.length} items`,
-										}}
-									/>
+									<Media images={p().images} />
 								</section>
 							</Show>
 						</div>

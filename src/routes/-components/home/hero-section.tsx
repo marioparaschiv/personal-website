@@ -1,7 +1,7 @@
-import { ArrowDown } from 'lucide-solid';
-
 import Beams from '~/components/effects/beams';
 import { site } from '~/content/site';
+
+import ScrollHint from './scroll-hint';
 
 interface HeroSectionProps {
 	contentRef: (el: HTMLDivElement) => void;
@@ -35,14 +35,7 @@ function HeroSection(props: HeroSectionProps) {
 				</div>
 			</div>
 			<div class='bottom-0 z-20 absolute inset-x-0 bg-linear-to-t from-background to-transparent h-32 pointer-events-none' />
-			<button
-				type='button'
-				onClick={props.onScrollDown}
-				class='bottom-15 z-20 absolute inset-x-0 flex flex-col justify-center items-center gap-2 opacity-60 text-muted-foreground hover:text-foreground transition-[color,translate] hover:translate-y-1 duration-250 ease-in-out cursor-pointer'
-			>
-				<span class='text-xs uppercase bold'>My Work</span>
-				<ArrowDown class='text-lg' size={18} />
-			</button>
+			<ScrollHint label='Featured Work' onClick={props.onScrollDown} />
 		</section>
 	);
 }

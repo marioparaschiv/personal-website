@@ -33,7 +33,10 @@ function ProjectCard(props: Project) {
 					((event.currentTarget as HTMLImageElement).src = '/img/projects/fallback.png')
 				}
 			/>
-			<div class='z-10 absolute bg-linear-to-t from-black/80 to-black/20 w-full h-full'>
+			<div
+				class='group z-10 absolute bg-linear-to-t from-black/80 to-black/20 w-full h-full cursor-pointer'
+				onClick={() => navigate({ to: '/projects/$id', params: { id: props.id } })}
+			>
 				<div class='relative flex flex-col justify-center items-center rounded-sm h-full'>
 					<img
 						loading='eager'
@@ -58,8 +61,7 @@ function ProjectCard(props: Project) {
 					</div>
 					<button
 						type='button'
-						onClick={() => navigate({ to: '/projects/$id', params: { id: props.id } })}
-						class='group relative flex items-center gap-2 opacity-70 hover:opacity-100 px-2 py-1 border border-transparent hover:border-white/30 overflow-hidden font-light text-sm uppercase tracking-widest transition-all duration-300 cursor-pointer'
+						class='relative flex items-center gap-2 opacity-70 group-hover:opacity-100 focus-visible:opacity-100 px-2 py-1 border border-transparent group-hover:border-white/30 overflow-hidden font-light text-sm uppercase tracking-widest transition-all duration-300 cursor-pointer'
 					>
 						<span class='absolute inset-0 bg-white/10 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300' />
 						<span class='relative'>View project</span>

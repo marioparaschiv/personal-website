@@ -256,7 +256,7 @@ function Lightbox(props: LightboxProps) {
 					</div>
 
 					<Dialog.CloseButton
-						class='fixed top-4 right-4 z-50 p-2 text-white/70 hover:text-white transition-[color,opacity] duration-300 cursor-pointer'
+						class='fixed top-4 right-4 z-50 group/nav overflow-hidden p-2 border border-transparent hover:border-white/30 text-white/70 hover:text-white focus-visible:outline-hidden focus-visible:border-white/60 transition-[color,opacity,border-color] duration-300 cursor-pointer'
 						style={{ opacity: overlayOpacity() }}
 						onClick={(e: MouseEvent) => {
 							e.stopPropagation();
@@ -264,27 +264,30 @@ function Lightbox(props: LightboxProps) {
 						}}
 						aria-label='Close lightbox'
 					>
-						<X size={24} />
+						<span class='absolute inset-0 bg-white/10 scale-x-0 group-hover/nav:scale-x-100 origin-left transition-transform duration-300' />
+						<X class='relative' size={20} />
 					</Dialog.CloseButton>
 
 					<Show when={hasMultiple()}>
 						<button
 							type='button'
-							class='fixed left-4 top-1/2 -translate-y-1/2 z-50 p-2 text-white/70 hover:text-white transition-[color,opacity] duration-300 cursor-pointer'
+							class='fixed left-4 top-1/2 -translate-y-1/2 z-50 group/nav overflow-hidden p-2 border border-transparent hover:border-white/30 text-white/70 hover:text-white focus-visible:outline-hidden focus-visible:border-white/60 transition-[color,opacity,border-color] duration-300 cursor-pointer'
 							style={{ opacity: overlayOpacity() }}
 							onClick={() => navigate(-1)}
 							aria-label='Previous image'
 						>
-							<ArrowLeft size={24} />
+							<span class='absolute inset-0 bg-white/10 scale-x-0 group-hover/nav:scale-x-100 origin-left transition-transform duration-300' />
+							<ArrowLeft class='relative' size={20} />
 						</button>
 						<button
 							type='button'
-							class='fixed right-4 top-1/2 -translate-y-1/2 z-50 p-2 text-white/70 hover:text-white transition-[color,opacity] duration-300 cursor-pointer'
+							class='fixed right-4 top-1/2 -translate-y-1/2 z-50 group/nav overflow-hidden p-2 border border-transparent hover:border-white/30 text-white/70 hover:text-white focus-visible:outline-hidden focus-visible:border-white/60 transition-[color,opacity,border-color] duration-300 cursor-pointer'
 							style={{ opacity: overlayOpacity() }}
 							onClick={() => navigate(1)}
 							aria-label='Next image'
 						>
-							<ArrowRight size={24} />
+							<span class='absolute inset-0 bg-white/10 scale-x-0 group-hover/nav:scale-x-100 origin-left transition-transform duration-300' />
+							<ArrowRight class='relative' size={20} />
 						</button>
 					</Show>
 
@@ -292,17 +295,21 @@ function Lightbox(props: LightboxProps) {
 						class='fixed bottom-0 left-0 right-0 z-50 flex flex-col items-center gap-1 pb-4 pointer-events-none transition-[opacity,transform] duration-300 ease-in-out'
 						style={{
 							opacity: overlayOpacity(),
-							transform: overlayOpacity() === 1 ? 'translateY(0)' : 'translateY(1rem)',
+							transform:
+								overlayOpacity() === 1 ? 'translateY(0)' : 'translateY(1rem)',
 						}}
 					>
 						<Show when={hasMultiple()}>
-							<span class='text-white/70 text-xs font-medium tabular-nums'>
-								{activeIndex() + 1} / {props.images.length}
+							<span class='font-light text-white/50 text-xs tabular-nums uppercase tracking-widest'>
+								<span class='text-white'>
+									{String(activeIndex() + 1).padStart(2, '0')}
+								</span>{' '}
+								/ {String(props.images.length).padStart(2, '0')}
 							</span>
 						</Show>
 						<Show when={image()}>
 							{(img) => (
-								<span class='text-white/50 text-xs text-center px-4 truncate max-w-sm'>
+								<span class='text-white/70 text-sm text-center px-4 truncate max-w-sm'>
 									{img().title}
 								</span>
 							)}

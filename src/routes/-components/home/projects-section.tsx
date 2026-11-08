@@ -12,9 +12,11 @@ import { projects } from '~/content/projects';
 
 import CarouselDots from './carousel-dots';
 import ProjectCard from './project-card';
+import ScrollHint from './scroll-hint';
 
 interface ProjectsSectionProps {
 	contentRef: (el: HTMLDivElement) => void;
+	onScrollDown: () => void;
 }
 
 function ProjectsSection(props: ProjectsSectionProps) {
@@ -68,6 +70,7 @@ function ProjectsSection(props: ProjectsSectionProps) {
 					</Carousel>
 				</div>
 			</div>
+			<ScrollHint label='Other Work' onClick={props.onScrollDown} />
 		</section>
 	);
 }

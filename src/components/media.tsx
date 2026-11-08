@@ -1,320 +1,187 @@
-import { For, Show, createEffect, createMemo, createSignal, onCleanup, onMount } from 'solid-js';
-import { Dialog } from '@kobalte/core/dialog';
-import { ArrowUpDown } from 'lucide-solid';
+import { For, Show, createEffect, createSignal, on } from 'solid-js';
+import { ArrowLeft, ArrowRight, Maximize2 } from 'lucide-solid';
 
 import Lightbox from '~/components/lightbox';
-import Card from '~/components/card';
+import { cn } from '~/utils';
 
-interface Image {
+type Image = {
 	src: string;
 	title: string;
 	subtitle: string;
+};
+
+type MediaProps = {
+	images: Image[];
+};
+
+const FALLBACK = '/img/projects/fallback.png';
+
+const navButton =
+	'group/nav relative flex items-center justify-center opacity-70 hover:opacity-100 p-2 border border-transparent hover:border-white/30 overflow-hidden transition-all duration-300 cursor-pointer';
+
+function onImageError(event: Event) {
+	const img = event.currentTarget as HTMLImageElement;
+
+	if (!img.src.endsWith(FALLBACK)) img.src = FALLBACK;
 }
 
-interface MediaProps {
-	onSelect?: (index: number) => void;
-	images: Image[];
-	footer?: {
-		enabled?: boolean;
-		hint?: boolean;
-		subtitle?: string;
-	};
+function pad(value: number) {
+	return String(value).padStart(2, '0');
 }
 
 function Media(props: MediaProps) {
-	const [opened, setOpened] = createSignal(false);
-	const [locked, setLocked] = createSignal(false);
 	const [selected, setSelected] = createSignal(0);
-	const [hovered, setHovered] = createSignal(0);
-	const [search, setSearch] = createSignal('');
-
 	const [lightboxOpen, setLightboxOpen] = createSignal(false);
 	const [sourceRect, setSourceRect] = createSignal<DOMRect | null>(null);
 
-	const [highlightTop, setHighlightTop] = createSignal(0);
-	const [highlightWidth, setHighlightWidth] = createSignal(0);
-	const [highlightHeight, setHighlightHeight] = createSignal(0);
+	let frameRef!: HTMLButtonElement;
+	let stripRef: HTMLDivElement | undefined;
 
-	let listRef!: HTMLDivElement;
-	let highlightRef: HTMLDivElement | undefined;
-	let thumbnailRef!: HTMLImageElement;
-	let initialMount = true;
+	const count = () => props.images.length;
+	const current = () => props.images[selected()];
 
-	const footer = () => props.footer ?? {};
+	createEffect(
+		on(
+			() => props.images,
+			() => setSelected(0),
+			{ defer: true },
+		),
+	);
 
-	const items = createMemo(() => {
-		const s = search().toLowerCase();
-		return props.images.filter((image) =>
-			[image.title, image.subtitle].some((v) => v.toLowerCase().includes(s)),
-		);
-	});
+	function select(index: number) {
+		const next = (index + count()) % count();
 
-	createEffect(() => {
-		if (items().length - 1 < hovered()) {
-			setHovered(0);
-		}
-	});
-
-	function updateHighlight(target: HTMLElement | undefined) {
-		if (!target) return;
-		setHighlightTop(target.offsetTop);
-		setHighlightWidth(target.offsetWidth);
-		setHighlightHeight(target.offsetHeight);
+		setSelected(next);
+		stripRef?.children[next]?.scrollIntoView({
+			behavior: 'smooth',
+			block: 'nearest',
+			inline: 'center',
+		});
 	}
 
-	function scrollToIndex(index: number) {
-		if (!listRef) return;
-
-		const child = index + 1;
-		const hasVerticalScrollbar = listRef.scrollHeight > listRef.clientHeight;
-
-		if (hasVerticalScrollbar) {
-			listRef.children[child]?.scrollIntoView({
-				behavior: 'smooth',
-				block: 'center',
-			});
-		}
+	function openLightbox() {
+		setSourceRect(frameRef.getBoundingClientRect());
+		setLightboxOpen(true);
 	}
-
-	function changeIndex(index: number) {
-		setHovered(index);
-		scrollToIndex(index);
-	}
-
-	createEffect(() => {
-		hovered();
-		if (!highlightRef) return;
-		updateHighlight(highlightRef);
-	});
-
-	createEffect(() => {
-		if (!opened()) {
-			initialMount = true;
-		}
-	});
-
-	function moveDown() {
-		setLocked(true);
-		changeIndex(hovered() < items().length - 1 ? hovered() + 1 : 0);
-	}
-
-	function moveUp() {
-		setLocked(true);
-		changeIndex(hovered() > 0 ? hovered() - 1 : items().length - 1);
-	}
-
-	onMount(() => {
-		function onResize() {
-			if (!highlightRef) return;
-
-			updateHighlight(highlightRef);
-			scrollToIndex(hovered());
-		}
-
-		window.addEventListener('resize', onResize);
-
-		onCleanup(() => window.removeEventListener('resize', onResize));
-	});
 
 	return (
-		<>
-			<Show when={props.images.length > 0}>
+		<Show when={count() > 0}>
+			<div class='flex flex-col gap-3'>
 				<button
+					ref={frameRef}
 					type='button'
-					aria-haspopup='dialog'
-					class='group relative flex justify-center items-center bg-neutral-900 border border-neutral-800 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white aspect-video overflow-hidden cursor-pointer w-full'
-					onClick={() => {
-						if (thumbnailRef) setSourceRect(thumbnailRef.getBoundingClientRect());
-						setLightboxOpen(true);
-					}}
+					aria-label={`Expand ${current()?.title}`}
+					class='group relative bg-neutral-900 border border-neutral-800 hover:border-white/30 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white w-full aspect-video overflow-hidden transition-colors duration-300 cursor-zoom-in'
+					onClick={openLightbox}
 				>
-					<img
-						ref={thumbnailRef}
-						loading='lazy'
-						decoding='async'
-						alt={props.images[selected()]?.title}
-						src={props.images[selected()]?.src}
-						onError={(event) =>
-							((event.currentTarget as HTMLImageElement).src =
-								'/img/projects/fallback.png')
-						}
-						sizes='100vw'
-						class='absolute w-full max-w-none h-full object-cover text-transparent scale-[1.02]'
-					/>
+					<For each={props.images}>
+						{(image, index) => (
+							<img
+								loading={index() === 0 ? 'eager' : 'lazy'}
+								decoding='async'
+								alt={image.title}
+								src={image.src}
+								onError={onImageError}
+								draggable={false}
+								class={cn(
+									'absolute inset-0 w-full h-full object-cover transition-[opacity,scale] duration-500 ease-out group-hover:scale-[1.02]',
+									index() === selected() ? 'opacity-100' : 'opacity-0',
+								)}
+							/>
+						)}
+					</For>
+
+					<span class='right-4 bottom-4 absolute flex items-center gap-2 bg-black/60 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 backdrop-blur-sm px-3 py-1.5 font-light text-white text-xs uppercase tracking-widest transition-[opacity,translate] translate-y-1 group-hover:translate-y-0 duration-300'>
+						<Maximize2 size={12} />
+						Expand
+					</span>
+
+					<span class='top-2 left-2 absolute border-white/0 group-hover:border-white/50 border-t-2 border-l-2 w-5 h-5 transition-[border-color,translate] translate-x-1 translate-y-1 group-hover:translate-x-0 group-hover:translate-y-0 duration-300' />
+					<span class='top-2 right-2 absolute border-white/0 group-hover:border-white/50 border-t-2 border-r-2 w-5 h-5 transition-[border-color,translate] -translate-x-1 translate-y-1 group-hover:translate-x-0 group-hover:translate-y-0 duration-300' />
+					<span class='bottom-2 left-2 absolute border-white/0 group-hover:border-white/50 border-b-2 border-l-2 w-5 h-5 transition-[border-color,translate] translate-x-1 -translate-y-1 group-hover:translate-x-0 group-hover:translate-y-0 duration-300' />
+					<span class='right-2 bottom-2 absolute border-white/0 group-hover:border-white/50 border-r-2 border-b-2 w-5 h-5 transition-[border-color,translate] -translate-x-1 -translate-y-1 group-hover:translate-x-0 group-hover:translate-y-0 duration-300' />
 				</button>
-				<Dialog open={opened()} onOpenChange={setOpened}>
-					<Dialog.Trigger
-						as='div'
-						tabIndex={-1}
-						class='w-full! appearance-none cursor-pointer'
+
+				<div class='flex items-center gap-4'>
+					<div class='flex flex-col flex-1 gap-0.5 min-w-0'>
+						<span class='font-medium text-white sm:text-lg truncate'>
+							{current()?.title}
+						</span>
+						<span class='text-neutral-400 text-sm truncate'>{current()?.subtitle}</span>
+					</div>
+
+					<Show when={count() > 1}>
+						<div class='flex items-center gap-1 shrink-0'>
+							<span class='mr-2 font-light text-neutral-400 text-xs tabular-nums uppercase tracking-widest'>
+								<span class='text-white'>{pad(selected() + 1)}</span> /{' '}
+								{pad(count())}
+							</span>
+							<button
+								type='button'
+								aria-label='Previous image'
+								class={navButton}
+								onClick={() => select(selected() - 1)}
+							>
+								<span class='absolute inset-0 bg-white/10 scale-x-0 group-hover/nav:scale-x-100 origin-left transition-transform duration-300' />
+								<ArrowLeft class='relative' size={14} />
+							</button>
+							<button
+								type='button'
+								aria-label='Next image'
+								class={navButton}
+								onClick={() => select(selected() + 1)}
+							>
+								<span class='absolute inset-0 bg-white/10 scale-x-0 group-hover/nav:scale-x-100 origin-left transition-transform duration-300' />
+								<ArrowRight class='relative' size={14} />
+							</button>
+						</div>
+					</Show>
+				</div>
+
+				<Show when={count() > 1}>
+					<div
+						ref={stripRef}
+						class='flex gap-2 pb-1 overflow-x-auto [scrollbar-width:none]'
 					>
-						<Card
-							aria-pressed={opened()}
-							tabIndex={0}
-							role='button'
-							class='focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white'
-							contentClass='group flex items-center'
-							onClick={() => setOpened(!opened())}
-						>
-							<div class='flex flex-col items-start gap-1 overflow-hidden'>
-								<span class='font-semibold text-white text-sm sm:text-base md:text-lg lg:text-xl truncate'>
-									{props.images[selected()]?.title}
-								</span>
-								<span class='text-neutral-300 text-xs md:text-sm'>
-									{props.images[selected()]?.subtitle}
-								</span>
-							</div>
-							<div class='ml-auto group-hover:text-white transition-colors'>
-								<ArrowUpDown size={24} />
-							</div>
-						</Card>
-					</Dialog.Trigger>
-					<Dialog.Portal>
-						<Dialog.Overlay class='fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-175 ease-in-out data-expanded:opacity-100 data-closed:opacity-0' />
-						<Dialog.Content
-							class='top-1/2 left-1/2 fixed w-full max-w-xl -translate-x-1/2! -translate-y-1/2! transition-[opacity,transform] duration-175 ease-in-out data-expanded:opacity-100 data-expanded:scale-100 data-closed:opacity-0 data-closed:scale-95'
-							onKeyDown={(event: KeyboardEvent) => {
-								switch (event.key) {
-									case 'ArrowDown':
-										event.preventDefault();
-										moveDown();
-										event.stopPropagation();
-										break;
-
-									case 'ArrowUp':
-										event.preventDefault();
-										moveUp();
-										event.stopPropagation();
-										break;
-									case 'Enter':
-										if (!items().length) return;
-
-										setOpened(false);
-										setSelected(hovered());
-										break;
-								}
-							}}
-						>
-							<div class='bg-neutral-900 shadow-lg mx-6 sm:mx-0 border border-neutral-700'>
-								<input
-									type='text'
-									autofocus={false}
-									placeholder='Search...'
-									class='z-20 bg-transparent px-6 sm:px-7 py-3 sm:py-4 border-neutral-800 border-b outline-hidden w-full text-white placeholder:text-neutral-500 text-sm sm:text-base'
-									onInput={(event) => setSearch(event.currentTarget.value)}
-									value={search()}
-								/>
-								<div
-									ref={listRef}
-									class='z-0 relative flex flex-col px-3 sm:px-4 py-2 sm:py-3 w-full h-full max-h-80 overflow-auto'
+						<For each={props.images}>
+							{(image, index) => (
+								<button
+									type='button'
+									aria-label={image.title}
+									aria-current={index() === selected()}
+									class={cn(
+										'relative flex-1 bg-neutral-900 border min-w-28 max-w-44 aspect-video overflow-hidden transition-[opacity,border-color] duration-300 cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white',
+										index() === selected()
+											? 'border-white/60 opacity-100'
+											: 'border-neutral-800 opacity-50 hover:opacity-90 hover:border-white/30',
+									)}
+									onClick={() => select(index())}
 								>
-									<Show when={items().length !== 0}>
-										<div
-											class='z-10 absolute bg-white/10 transition-[top,width,height]'
-											style={{
-												width: `${highlightWidth()}px`,
-												height: `${highlightHeight()}px`,
-												top: `${highlightTop()}px`,
-												'transition-duration': '250ms',
-												'transition-timing-function': 'ease-in-out',
-											}}
-										/>
-									</Show>
-									<Show when={items().length === 0}>
-										<div class='p-12 text-center'>
-											No items found containing{' '}
-											<b>'{search().toLowerCase()}'.</b>
-										</div>
-									</Show>
-									<For each={items()}>
-										{(image, index) => (
-											<div
-												class='z-10 relative flex items-center gap-3 p-1.5 sm:p-2 cursor-pointer'
-												ref={(r) => {
-													if (hovered() !== index()) return;
+									<img
+										loading='lazy'
+										decoding='async'
+										alt=''
+										src={image.src}
+										onError={onImageError}
+										draggable={false}
+										class='absolute inset-0 w-full h-full object-cover'
+									/>
+								</button>
+							)}
+						</For>
+					</div>
+				</Show>
+			</div>
 
-													highlightRef = r;
-
-													if (initialMount) {
-														initialMount = false;
-														updateHighlight(r);
-													}
-												}}
-												onClick={() => {
-													setOpened(false);
-													setSelected(index());
-												}}
-												onMouseLeave={() => setLocked(false)}
-												onMouseEnter={() => {
-													if (!locked()) {
-														setHovered(index());
-													}
-												}}
-											>
-												<div class='relative bg-neutral-900 w-24 sm:w-32 h-13.5 sm:h-18 overflow-hidden'>
-													<img
-														alt={`Media ${image.src}`}
-														loading='lazy'
-														decoding='async'
-														onError={(event) =>
-															((
-																event.currentTarget as HTMLImageElement
-															).src = '/img/projects/fallback.png')
-														}
-														src={image.src}
-														class='shadow-none border-none outline-hidden max-w-none object-cover scale-[1.02]'
-														style={{
-															position: 'absolute',
-															height: '100%',
-															width: '100%',
-															inset: '0',
-															color: 'transparent',
-														}}
-													/>
-												</div>
-												<div class='flex-1'>
-													<div class='font-medium text-white sm:text-md text-sm'>
-														{image.title}
-													</div>
-													<div class='text-neutral-500 text-xs'>
-														{image.subtitle}
-													</div>
-												</div>
-											</div>
-										)}
-									</For>
-								</div>
-								<Show when={footer().enabled ?? true}>
-									<div class='flex justify-between items-center px-6 sm:px-7 py-3 sm:py-4 border-neutral-800 border-t w-full'>
-										<Show when={footer().subtitle}>
-											<div class='font-medium text-neutral-500 text-xs sm:text-sm'>
-												{footer().subtitle}
-											</div>
-										</Show>
-										<Show when={footer().hint ?? true}>
-											<div class='flex items-center gap-2 font-medium text-white text-xs sm:text-sm'>
-												View Media
-												<div class='flex justify-center items-center bg-white/5 px-2 pt-1 text-xs'>
-													&#x21B5;
-												</div>
-											</div>
-										</Show>
-									</div>
-								</Show>
-							</div>
-						</Dialog.Content>
-					</Dialog.Portal>
-				</Dialog>
-				<Lightbox
-					images={props.images}
-					index={() => selected()}
-					open={() => lightboxOpen()}
-					onOpenChange={setLightboxOpen}
-					onIndexChange={setSelected}
-					sourceRect={() => sourceRect()}
-				/>
-			</Show>
-		</>
+			<Lightbox
+				images={props.images}
+				index={() => selected()}
+				open={() => lightboxOpen()}
+				onOpenChange={setLightboxOpen}
+				onIndexChange={select}
+				sourceRect={() => sourceRect()}
+			/>
+		</Show>
 	);
 }
 

@@ -7,16 +7,18 @@ import useScrollSnap from '~/components/hooks/use-scroll-snap';
 import { site } from '~/content/site';
 import { cn } from '~/utils';
 
+import OtherWorkSection from './-components/home/other-work-section';
 import ProjectsSection from './-components/home/projects-section';
 import HeroSection from './-components/home/hero-section';
 
-const SECTIONS = ['Intro', 'My Work'] as const;
+const SECTIONS = ['Intro', 'Featured Work', 'Other Work'] as const;
 
 function Home() {
 	const navigate = useNavigate();
 	let containerRef!: HTMLDivElement;
 	let heroContentRef!: HTMLDivElement;
 	let projectsContentRef!: HTMLDivElement;
+	let otherContentRef!: HTMLDivElement;
 
 	function onScrollProgress(ratio: number) {
 		if (heroContentRef) {
@@ -24,9 +26,14 @@ function Home() {
 		}
 
 		if (projectsContentRef) {
-			projectsContentRef.style.opacity = String(
-				Math.min(Math.max((ratio - 0.2) / 0.3, 0), 1),
-			);
+			const fadeIn = Math.min(Math.max((ratio - 0.2) / 0.3, 0), 1);
+			const fadeOut = 1 - Math.min(Math.max((ratio - 1) / 0.3, 0), 1);
+
+			projectsContentRef.style.opacity = String(Math.min(fadeIn, fadeOut));
+		}
+
+		if (otherContentRef) {
+			otherContentRef.style.opacity = String(Math.min(Math.max((ratio - 1.2) / 0.3, 0), 1));
 		}
 	}
 
@@ -92,7 +99,14 @@ function Home() {
 				contentRef={(el: HTMLDivElement) => (heroContentRef = el)}
 				onScrollDown={() => snapTo(1)}
 			/>
-			<ProjectsSection contentRef={(el: HTMLDivElement) => (projectsContentRef = el)} />
+			<ProjectsSection
+				contentRef={(el: HTMLDivElement) => (projectsContentRef = el)}
+				onScrollDown={() => snapTo(2)}
+			/>
+			<OtherWorkSection
+				contentRef={(el: HTMLDivElement) => (otherContentRef = el)}
+				onScrollTop={() => snapTo(0)}
+			/>
 		</div>
 	);
 }
