@@ -69,6 +69,27 @@ images:
       subtitle: Keys for the ingest API, filterable by temporary, permanent, expired and disabled.
 ---
 
-If you're managing communities on both Discord and Telegram, you're switching between apps constantly. Telecord puts both into one real-time feed so you can stop tabbing back and forth.
+If you follow communities on both Discord and Telegram, you spend the day switching between apps. Telecord puts every chat from both platforms into **one real-time feed, so you can read, search and reply from one place**.
 
-It handles multi-channel broadcasting with deduplication, has AI-assisted message rewriting for adjusting tone or language, and lets you set keyword alerts to catch what matters in busy channels.
+**You can connect several Discord and Telegram accounts at once.** Each one shows its own live connection state, and you pick which account sends. Messages land in feeds you build from filters, so one tab can hold your trading calls and another everything that mentions you. Search covers every source. Triggers watch for reactions, DMs, keywords or specific people and send an in-app toast or a push to your phone. You can forward a message to up to 25 chats at once, rewrite a draft with AI before sending it, and see which chats and people are the busiest.
+
+## More than a proxy
+
+Telecord doesn't just pass messages from one app to another. **It has its own backend and its own database.** Every message is stored, indexed and kept up to date as it's edited, reacted to or deleted, so search, statistics and alerts work across your whole history and not just what's on screen. It has its own accounts, permissions and API keys, plus an ingest API that other tools can stream messages into over WebSockets.
+
+## Built to scale
+
+Scalability shaped most of the design. **A busy setup means many accounts, each in hundreds of chats, all producing messages at the same time**, and the system has to keep up without dropping or duplicating anything.
+
+- A supervisor runs each Discord or Telegram account in its own process. If one crashes or stops responding, it restarts with exponential backoff, and the other accounts carry on untouched.
+- Workers hand messages to Redis-backed queues split by priority, so new messages go ahead of history backfills. If Postgres goes down, the queues slow down and wait instead of losing work, and a Postgres inbox re-queues anything Redis drops.
+- Several of your accounts often see the same message. Copies collapse in the queue and again in the database, and edits and reactions wait until the message they belong to has landed.
+- Postgres runs TimescaleDB for activity statistics, with hourly and daily rollups, and the busiest event tables are partitioned by time. PgBouncer pools the connections, and search runs on a sharded Elasticsearch index that a separate indexer fills in batches.
+- Database changes flow to a WebSocket gateway, which merges repeated updates and sends each one as a compact MessagePack frame, so the app never polls.
+- In the browser, the feed is a virtualized list that keeps about 100 messages rendered however fast new ones arrive.
+
+The backend is 12 separate services, each in its own small Docker image. A deploy restarts only the services that changed, and OpenTelemetry tracing shows where a message spends its time on the way to your screen.
+
+## My part
+
+I designed and built Telecord, from the account workers and the ingestion pipeline to the database, the gateway and the web app.
