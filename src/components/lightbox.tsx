@@ -5,6 +5,8 @@ import type { Accessor } from 'solid-js';
 
 import { usePrefersReducedMotion } from '~/components/hooks/use-media-query';
 
+import createZoom from './lightbox-zoom';
+
 interface Image {
 	src: string;
 	title: string;
@@ -43,6 +45,12 @@ function Lightbox(props: LightboxProps) {
 	let boxRef: HTMLDivElement | undefined;
 	let innerImgRef: HTMLImageElement | undefined;
 	let touchStartX = 0;
+	let navigation = 0;
+
+	const zoom = createZoom(
+		() => boxRef,
+		() => innerImgRef,
+	);
 
 	const image = () => props.images[activeIndex()];
 	const hasMultiple = () => props.images.length > 1;
@@ -52,6 +60,7 @@ function Lightbox(props: LightboxProps) {
 			() => props.open(),
 			(open) => {
 				if (!open) return;
+				zoom.reset(true);
 				setActiveIndex(props.index());
 			},
 		),
@@ -115,6 +124,7 @@ function Lightbox(props: LightboxProps) {
 	function close() {
 		if (animating()) return;
 
+		zoom.reset(true);
 		setOverlayOpacity(0);
 
 		const rect = props.sourceRect();
@@ -153,14 +163,43 @@ function Lightbox(props: LightboxProps) {
 	function navigate(delta: number) {
 		const img = innerImgRef;
 
-		if (animating() || crossFading() || !hasMultiple() || !img) return;
+		if (animating() || !hasMultiple() || !img) return;
 
 		const next = (activeIndex() + delta + props.images.length) % props.images.length;
+		const run = ++navigation;
 
 		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		const shift = reduced ? 0 : 10 * Math.sign(delta);
 		const blur = reduced ? 0 : 12;
 		const still = { opacity: 1, translate: '0 0', filter: 'blur(0px)' };
+
+		const swapIn = async () => {
+			zoom.reset(true);
+			setActiveIndex(next);
+			props.onIndexChange?.(next);
+
+			await img.decode().catch(() => {});
+
+			if (run !== navigation) return;
+
+			for (const running of img.getAnimations()) running.cancel();
+
+			const into = img.animate(
+				[{ opacity: 0, translate: `${shift}% 0`, filter: `blur(${blur}px)` }, still],
+				{ duration: reduced ? 200 : 380, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' },
+			);
+
+			into.onfinish = () => {
+				if (run === navigation) setCrossFading(false);
+			};
+		};
+
+		// Mid-swoosh, skip straight to the next image so rapid presses never queue up or wait.
+		if (crossFading()) {
+			void swapIn();
+
+			return;
+		}
 
 		setCrossFading(true);
 
@@ -174,19 +213,8 @@ function Lightbox(props: LightboxProps) {
 			},
 		);
 
-		out.onfinish = async () => {
-			setActiveIndex(next);
-			props.onIndexChange?.(next);
-
-			await img.decode().catch(() => {});
-
-			const into = img.animate(
-				[{ opacity: 0, translate: `${shift}% 0`, filter: `blur(${blur}px)` }, still],
-				{ duration: reduced ? 200 : 380, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' },
-			);
-
-			out.cancel();
-			into.onfinish = () => setCrossFading(false);
+		out.onfinish = () => {
+			if (run === navigation) void swapIn();
 		};
 	}
 
@@ -209,7 +237,7 @@ function Lightbox(props: LightboxProps) {
 
 	function onTouchEnd(e: TouchEvent) {
 		const delta = e.changedTouches[0].clientX - touchStartX;
-		if (Math.abs(delta) > 50) {
+		if (Math.abs(delta) > 50 && !zoom.zoomed()) {
 			navigate(delta > 0 ? -1 : 1);
 		}
 	}
@@ -249,18 +277,27 @@ function Lightbox(props: LightboxProps) {
 								<div
 									ref={(el) => {
 										boxRef = el;
+										// Wheel needs a non-passive listener so it can zoom instead of scrolling the page.
+										el.addEventListener('wheel', zoom.handlers.onWheel, {
+											passive: false,
+										});
 										if (props.open()) {
 											requestAnimationFrame(() => playOpen());
 										}
 									}}
 									classList={{
-										'relative w-[min(90vw,calc((100dvh-10rem)*16/9))] aspect-video select-none': true,
+										'relative w-[min(90vw,calc((100dvh-10rem)*16/9))] aspect-video overflow-hidden select-none touch-none': true,
 										'lightbox-transition': transitioning(),
 									}}
 									style={{
 										transform: transform(),
 										opacity: imgOpacity(),
+										cursor: zoom.cursor(),
 									}}
+									onPointerDown={zoom.handlers.onPointerDown}
+									onPointerMove={zoom.handlers.onPointerMove}
+									onPointerUp={zoom.handlers.onPointerUp}
+									onPointerCancel={zoom.handlers.onPointerCancel}
 								>
 									<img
 										ref={innerImgRef}
