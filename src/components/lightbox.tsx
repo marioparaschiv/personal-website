@@ -286,7 +286,7 @@ function Lightbox(props: LightboxProps) {
 										}
 									}}
 									classList={{
-										'relative w-[min(90vw,calc((100dvh-10rem)*16/9))] aspect-video overflow-hidden select-none touch-none': true,
+										'relative w-[min(90vw,calc((100dvh-10rem)*16/9))] aspect-video select-none touch-none': true,
 										'lightbox-transition': transitioning(),
 									}}
 									style={{

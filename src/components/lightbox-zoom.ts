@@ -12,11 +12,6 @@ type Pan = {
 	startY: number;
 	originX: number;
 	originY: number;
-	lastX: number;
-	lastY: number;
-	lastTime: number;
-	velocityX: number;
-	velocityY: number;
 	moved: boolean;
 };
 
@@ -30,10 +25,12 @@ const RESPONSE = 0.35;
 const STIFFNESS = ((2 * Math.PI) / RESPONSE) ** 2;
 const DAMPING = 2 * Math.sqrt(STIFFNESS);
 
-// Apple's scroll deceleration projection, so a flicked pan glides to where the throw was heading.
-function project(velocity: number, rate = 0.998) {
-	return ((velocity / 1000) * rate) / (1 - rate);
-}
+// While dragging, the image trails the pointer on a much tighter spring: enough to smooth out
+// jitter, quick enough that it lands exactly where it was let go with no drift.
+const PAN_RESPONSE = 0.09;
+const PAN_STIFFNESS = ((2 * Math.PI) / PAN_RESPONSE) ** 2;
+const PAN_DAMPING = 2 * Math.sqrt(PAN_STIFFNESS);
+const SUBSTEP = 1 / 240;
 
 function clamp(value: number, min: number, max: number) {
 	return Math.min(Math.max(value, min), max);
@@ -59,6 +56,7 @@ function createZoom(frame: () => HTMLElement | undefined, image: () => HTMLEleme
 	let frameId = 0;
 	let lastTick = 0;
 	let pan: Pan | undefined;
+	let settling = false;
 
 	const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -75,13 +73,17 @@ function createZoom(frame: () => HTMLElement | undefined, image: () => HTMLEleme
 		lastTick = now;
 
 		for (const a of axes) {
-			if (a === x && pan) continue;
-			if (a === y && pan) continue;
+			const tight = a !== scale && (pan?.moved || settling);
+			const stiffness = tight ? PAN_STIFFNESS : STIFFNESS;
+			const damping = tight ? PAN_DAMPING : DAMPING;
+			// Fixed small substeps keep the stiff drag spring stable when a frame arrives late.
+			for (let left = dt; left > 0; left -= SUBSTEP) {
+				const step = Math.min(left, SUBSTEP);
+				const force = -stiffness * (a.value - a.target) - damping * a.velocity;
 
-			const force = -STIFFNESS * (a.value - a.target) - DAMPING * a.velocity;
-
-			a.velocity += force * dt;
-			a.value += a.velocity * dt;
+				a.velocity += force * step;
+				a.value += a.velocity * step;
+			}
 
 			if (Math.abs(a.value - a.target) > 0.001 || Math.abs(a.velocity) > 0.01) {
 				resting = false;
@@ -90,6 +92,8 @@ function createZoom(frame: () => HTMLElement | undefined, image: () => HTMLEleme
 				a.velocity = 0;
 			}
 		}
+
+		if (resting) settling = false;
 
 		render();
 		frameId = resting && !pan ? 0 : requestAnimationFrame(tick);
@@ -113,16 +117,27 @@ function createZoom(frame: () => HTMLElement | undefined, image: () => HTMLEleme
 		frameId = requestAnimationFrame(tick);
 	}
 
+	// The zoomed image spills past its frame to fill the screen, so panning stops when an image edge
+	// reaches the viewport edge rather than the frame edge.
 	function bounds(s: number) {
 		const rect = frame()?.getBoundingClientRect();
 
+		if (!rect) return { x: 0, y: 0 };
+
+		const centerX = rect.left + rect.width / 2;
+		const centerY = rect.top + rect.height / 2;
+		const halfWidth = (rect.width * s) / 2;
+		const halfHeight = (rect.height * s) / 2;
+
 		return {
-			x: rect ? ((s - 1) * rect.width) / 2 : 0,
-			y: rect ? ((s - 1) * rect.height) / 2 : 0,
+			x: Math.max(0, halfWidth - Math.min(centerX, window.innerWidth - centerX)),
+			y: Math.max(0, halfHeight - Math.min(centerY, window.innerHeight - centerY)),
 		};
 	}
 
 	function setTargets(s: number, tx: number, ty: number) {
+		settling = false;
+
 		const next = clamp(s, MIN_SCALE, MAX_SCALE);
 		const limit = bounds(next);
 
@@ -179,18 +194,10 @@ function createZoom(frame: () => HTMLElement | undefined, image: () => HTMLEleme
 			pointerId: event.pointerId,
 			startX: event.clientX,
 			startY: event.clientY,
-			originX: x.value,
-			originY: y.value,
-			lastX: event.clientX,
-			lastY: event.clientY,
-			lastTime: event.timeStamp,
-			velocityX: 0,
-			velocityY: 0,
+			originX: x.target,
+			originY: y.target,
 			moved: false,
 		};
-
-		x.velocity = 0;
-		y.velocity = 0;
 	}
 
 	function onPointerMove(event: PointerEvent) {
@@ -205,22 +212,14 @@ function createZoom(frame: () => HTMLElement | undefined, image: () => HTMLEleme
 		pan.moved = true;
 		setPanning(true);
 
-		const dt = Math.max(event.timeStamp - pan.lastTime, 1);
-
-		pan.velocityX = ((event.clientX - pan.lastX) / dt) * 1000;
-		pan.velocityY = ((event.clientY - pan.lastY) / dt) * 1000;
-		pan.lastX = event.clientX;
-		pan.lastY = event.clientY;
-		pan.lastTime = event.timeStamp;
-
 		// Past the edge the image follows at a third of the pointer, so the limit feels like friction.
 		const limit = bounds(scale.target);
 		const rubber = (value: number, max: number) =>
 			value > max ? max + (value - max) / 3 : value < -max ? -max + (value + max) / 3 : value;
 
-		x.value = x.target = rubber(pan.originX + dx, limit.x);
-		y.value = y.target = rubber(pan.originY + dy, limit.y);
-		render();
+		x.target = rubber(pan.originX + dx, limit.x);
+		y.target = rubber(pan.originY + dy, limit.y);
+		start();
 	}
 
 	function onPointerUp(event: PointerEvent) {
@@ -238,13 +237,13 @@ function createZoom(frame: () => HTMLElement | undefined, image: () => HTMLEleme
 			return;
 		}
 
-		x.velocity = released.velocityX;
-		y.velocity = released.velocityY;
-		setTargets(
-			scale.target,
-			x.value + project(released.velocityX),
-			y.value + project(released.velocityY),
-		);
+		// No momentum: the image settles where it was let go on the drag spring, and only an
+		// over-dragged edge springs back on the softer one.
+		const releasedX = x.target;
+		const releasedY = y.target;
+
+		setTargets(scale.target, releasedX, releasedY);
+		settling = x.target === releasedX && y.target === releasedY;
 	}
 
 	const cursor = () => (panning() ? 'grabbing' : zoomed() ? 'grab' : 'zoom-in');
