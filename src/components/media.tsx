@@ -29,6 +29,37 @@ function pad(value: number) {
 	return String(value).padStart(2, '0');
 }
 
+const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
+const SWOOSH_MS = 460;
+
+// The blur is the motion streak: it peaks while the image is moving fastest and clears as it settles.
+function swoosh(
+	incoming: HTMLElement | undefined,
+	outgoing: HTMLElement | undefined,
+	direction: number,
+) {
+	const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	const shift = reduced ? 0 : 14 * direction;
+	const blur = reduced ? 0 : 10;
+	const timing = { duration: reduced ? 200 : SWOOSH_MS, easing: EASE_OUT };
+
+	incoming?.animate(
+		[
+			{ opacity: 0, translate: `${shift}% 0`, filter: `blur(${blur}px)` },
+			{ opacity: 1, translate: '0 0', filter: 'blur(0px)' },
+		],
+		timing,
+	);
+
+	outgoing?.animate(
+		[
+			{ opacity: 1, translate: '0 0', filter: 'blur(0px)' },
+			{ opacity: 0, translate: `${-shift}% 0`, filter: `blur(${blur}px)` },
+		],
+		timing,
+	);
+}
+
 function Media(props: MediaProps) {
 	const [selected, setSelected] = createSignal(0);
 	const [lightboxOpen, setLightboxOpen] = createSignal(false);
@@ -36,6 +67,7 @@ function Media(props: MediaProps) {
 
 	let frameRef!: HTMLButtonElement;
 	let stripRef: HTMLDivElement | undefined;
+	const slides: HTMLImageElement[] = [];
 
 	const count = () => props.images.length;
 	const current = () => props.images[selected()];
@@ -48,9 +80,13 @@ function Media(props: MediaProps) {
 		),
 	);
 
-	function select(index: number) {
+	function select(index: number, direction = Math.sign(index - selected())) {
+		const previous = selected();
 		const next = (index + count()) % count();
 
+		if (next === previous) return;
+
+		swoosh(slides[next], slides[previous], direction || 1);
 		setSelected(next);
 		stripRef?.children[next]?.scrollIntoView({
 			behavior: 'smooth',
@@ -77,6 +113,7 @@ function Media(props: MediaProps) {
 					<For each={props.images}>
 						{(image, index) => (
 							<img
+								ref={(el) => (slides[index()] = el)}
 								loading={index() === 0 ? 'eager' : 'lazy'}
 								decoding='async'
 								alt={image.title}
@@ -84,7 +121,7 @@ function Media(props: MediaProps) {
 								onError={onImageError}
 								draggable={false}
 								class={cn(
-									'absolute inset-0 w-full h-full object-cover transition-[opacity,scale] duration-500 ease-out group-hover:scale-[1.02]',
+									'absolute inset-0 w-full h-full object-cover transition-[scale] duration-500 ease-out group-hover:scale-[1.02]',
 									index() === selected() ? 'opacity-100' : 'opacity-0',
 								)}
 							/>
@@ -120,7 +157,7 @@ function Media(props: MediaProps) {
 								type='button'
 								aria-label='Previous image'
 								class={navButton}
-								onClick={() => select(selected() - 1)}
+								onClick={() => select(selected() - 1, -1)}
 							>
 								<span class='absolute inset-0 bg-white/10 scale-x-0 group-hover/nav:scale-x-100 origin-left transition-transform duration-300' />
 								<ArrowLeft class='relative' size={14} />
@@ -129,7 +166,7 @@ function Media(props: MediaProps) {
 								type='button'
 								aria-label='Next image'
 								class={navButton}
-								onClick={() => select(selected() + 1)}
+								onClick={() => select(selected() + 1, 1)}
 							>
 								<span class='absolute inset-0 bg-white/10 scale-x-0 group-hover/nav:scale-x-100 origin-left transition-transform duration-300' />
 								<ArrowRight class='relative' size={14} />
