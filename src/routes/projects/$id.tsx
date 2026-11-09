@@ -179,7 +179,13 @@ function Project() {
 								style={{ '--stagger': '4' }}
 							/>
 
-							<section class='mb-12 stagger' style={{ '--stagger': '5' }}>
+							<Show when={p().images.length > 0}>
+								<section class='mb-12 stagger' style={{ '--stagger': '5' }}>
+									<Media images={p().images} />
+								</section>
+							</Show>
+
+							<section class='stagger' style={{ '--stagger': '6' }}>
 								<Show
 									when={Content()}
 									keyed
@@ -190,15 +196,6 @@ function Project() {
 									{(C) => <C components={mdxComponents} />}
 								</Show>
 							</section>
-
-							<Show when={p().images.length > 0}>
-								<section class='stagger' style={{ '--stagger': '6' }}>
-									<h2 class='mb-4 font-semibold text-white text-2xl tracking-tight'>
-										Gallery
-									</h2>
-									<Media images={p().images} />
-								</section>
-							</Show>
 						</div>
 					</div>
 				);
