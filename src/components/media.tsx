@@ -1,372 +1,224 @@
-import { animated, easings, useSpringValue, useTransition } from '@react-spring/web';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import * as Dialog from '@radix-ui/react-dialog';
-import { ArrowUpDown } from 'lucide-react';
+import { For, Show, createEffect, createSignal, on } from 'solid-js';
+import { ArrowLeft, ArrowRight, Maximize2 } from 'lucide-solid';
 
-import Card from '~/components/card';
+import Lightbox from '~/components/lightbox';
+import { cn } from '~/utils';
 
-interface Image {
+type Image = {
 	src: string;
 	title: string;
 	subtitle: string;
-}
+};
 
-interface MediaProps extends React.ComponentProps<typeof Dialog.Root> {
-	onSelect?: (index: number) => void;
+type MediaProps = {
 	images: Image[];
-	footer?: {
-		enabled?: boolean;
-		hint?: boolean;
-		subtitle?: string;
-	};
+};
+
+const FALLBACK = '/img/projects/fallback.png';
+
+const navButton =
+	'group/nav relative flex items-center justify-center opacity-70 hover:opacity-100 p-2 border border-transparent hover:border-white/30 overflow-hidden transition-all duration-300 cursor-pointer';
+
+function onImageError(event: Event) {
+	const img = event.currentTarget as HTMLImageElement;
+
+	if (!img.src.endsWith(FALLBACK)) img.src = FALLBACK;
 }
 
-function Media({ images, footer = {}, ...props }: MediaProps) {
-	if (!images.length) return null;
+function pad(value: number) {
+	return String(value).padStart(2, '0');
+}
 
-	const [opened, setOpened] = useState(false);
-	const [locked, setLocked] = useState(false);
-	const [selected, setSelected] = useState(0);
-	const [hovered, setHovered] = useState(0);
-	const [search, setSearch] = useState('');
+const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
+const SWOOSH_MS = 460;
 
-	const listRef = useRef<HTMLDivElement | null>(null);
-	const ref = useRef<HTMLDivElement | null>(null);
-	const initialMount = useRef(true);
+// The blur is the motion streak: it peaks while the image is moving fastest and clears as it settles.
+function swoosh(
+	incoming: HTMLElement | undefined,
+	outgoing: HTMLElement | undefined,
+	direction: number,
+) {
+	const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	const shift = reduced ? 0 : 14 * direction;
+	const blur = reduced ? 0 : 10;
+	const timing = { duration: reduced ? 200 : SWOOSH_MS, easing: EASE_OUT };
 
-	const springTop = useSpringValue(0);
-	const springWidth = useSpringValue(0);
-	const springHeight = useSpringValue(0);
-	const animation = useMemo(
-		() => ({ top: springTop, width: springWidth, height: springHeight }),
-		[springTop, springWidth, springHeight],
+	incoming?.animate(
+		[
+			{ opacity: 0, translate: `${shift}% 0`, filter: `blur(${blur}px)` },
+			{ opacity: 1, translate: '0 0', filter: 'blur(0px)' },
+		],
+		timing,
 	);
 
-	const transitions = useTransition(opened, {
-		from: {
-			opacity: 0,
-			scale: 0.95,
-		},
-		enter: {
-			opacity: 1,
-			scale: 1,
-		},
-		leave: {
-			opacity: 0,
-			scale: 0.95,
-		},
-		config: {
-			easing: easings.easeInOutQuad,
-			duration: 175,
-		},
-	});
+	outgoing?.animate(
+		[
+			{ opacity: 1, translate: '0 0', filter: 'blur(0px)' },
+			{ opacity: 0, translate: `${-shift}% 0`, filter: `blur(${blur}px)` },
+		],
+		timing,
+	);
+}
 
-	const items = useMemo(() => {
-		const result: typeof images = [];
+function Media(props: MediaProps) {
+	const [selected, setSelected] = createSignal(0);
+	const [lightboxOpen, setLightboxOpen] = createSignal(false);
+	const [sourceRect, setSourceRect] = createSignal<DOMRect | null>(null);
 
-		for (let i = 0; images.length > i; i++) {
-			const image = images[i];
-			const searchable = [image.title, image.subtitle];
+	let frameRef!: HTMLButtonElement;
+	let stripRef: HTMLDivElement | undefined;
+	const slides: HTMLImageElement[] = [];
 
-			if (searchable.some((s) => s.toLowerCase().includes(search.toLowerCase()))) {
-				result.push(images[i]);
-			}
-		}
+	const count = () => props.images.length;
+	const current = () => props.images[selected()];
 
-		return result;
-	}, [search]);
-
-	// Out of bounds check
-	useEffect(() => {
-		if (items.length - 1 < hovered) {
-			setHovered(0);
-		}
-	}, [search, hovered]);
-
-	const animateProperties = useCallback((target?: HTMLElement, immediate: boolean = false) => {
-		if (!target) return;
-
-		animation.top[immediate ? 'set' : 'start'](target.offsetTop, {
-			config: {
-				duration: 250,
-				easing: easings.easeInOutQuad,
-			},
-		});
-
-		animation.width[immediate ? 'set' : 'start'](target.offsetWidth, {
-			config: {
-				duration: 150,
-				easing: easings.easeInOutQuad,
-			},
-		});
-
-		animation.height[immediate ? 'set' : 'start'](target.offsetHeight, {
-			config: {
-				duration: 150,
-				easing: easings.easeInOutQuad,
-			},
-		});
-	}, []);
-
-	const scrollToIndex = useCallback(
-		(index: number) => {
-			if (!listRef.current) {
-				return;
-			}
-
-			// Account for the highlight element
-			const child = index + 1;
-
-			// const hasHorizontalScrollbar = listRef.current.scrollWidth > listRef.current.clientWidth;
-			const hasVerticalScrollbar =
-				listRef.current.scrollHeight > listRef.current.clientHeight;
-
-			if (hasVerticalScrollbar) {
-				listRef.current.children[child]?.scrollIntoView({
-					behavior: 'smooth',
-					block: 'center',
-				});
-			}
-		},
-		[listRef],
+	createEffect(
+		on(
+			() => props.images,
+			() => setSelected(0),
+			{ defer: true },
+		),
 	);
 
-	const changeIndex = useCallback(
-		(index: number) => {
-			setHovered(index);
-			scrollToIndex(index);
-		},
-		[scrollToIndex],
-	);
+	function select(index: number, direction = Math.sign(index - selected())) {
+		const previous = selected();
+		const next = (index + count()) % count();
 
-	useEffect(() => {
-		if (!ref.current) return;
+		if (next === previous) return;
 
-		animateProperties(ref.current);
-	}, [hovered]);
+		swoosh(slides[next], slides[previous], direction || 1);
+		setSelected(next);
+		stripRef?.children[next]?.scrollIntoView({
+			behavior: 'smooth',
+			block: 'nearest',
+			inline: 'center',
+		});
+	}
 
-	useEffect(() => {
-		if (!opened) {
-			initialMount.current = true;
-		}
-	}, [opened]);
-
-	const moveDown = useCallback(() => {
-		setLocked(true);
-		changeIndex(hovered < items.length - 1 ? hovered + 1 : 0);
-	}, [hovered, items.length, changeIndex]);
-
-	const moveUp = useCallback(() => {
-		setLocked(true);
-		changeIndex(hovered > 0 ? hovered - 1 : items.length - 1);
-	}, [hovered, items.length, changeIndex]);
-
-	useEffect(() => {
-		function onResize() {
-			if (!ref.current) return;
-
-			const target = ref.current;
-
-			if (target) {
-				animateProperties(target, true);
-				scrollToIndex(hovered);
-			}
-		}
-
-		window.addEventListener('resize', onResize);
-
-		return () => window.removeEventListener('resize', onResize);
-	}, []);
+	function openLightbox() {
+		setSourceRect(frameRef.getBoundingClientRect());
+		setLightboxOpen(true);
+	}
 
 	return (
-		<>
-			<a
-				className='group relative flex justify-center items-center bg-neutral-900 border border-neutral-800 rounded-xl lg:rounded-3xl focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white aspect-video overflow-hidden'
-				href={images[selected].src}
-			>
-				<img
-					loading='lazy'
-					decoding='async'
-					alt={images[selected].title}
-					src={images[selected].src}
-					onError={(event) =>
-						((event.target as HTMLImageElement).src = '/img/projects/fallback.png')
-					}
-					sizes='100vw'
-					className='absolute w-full max-w-none h-full object-cover text-transparent scale-[1.02]'
-				/>
-			</a>
-			<Dialog.Root open={opened} onOpenChange={setOpened} {...props}>
-				<Dialog.Trigger tabIndex={-1} className='appearance-none [all:unset]!'>
-					<Card
-						aria-pressed={opened}
-						tabIndex={0}
-						role='button'
-						className='focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white'
-						contentClassName='group flex items-center'
-						onClick={() => setOpened(!opened)}
+		<Show when={count() > 0}>
+			<div class='flex flex-col gap-3'>
+				<button
+					ref={frameRef}
+					type='button'
+					aria-label={`Expand ${current()?.title}`}
+					class='group relative bg-neutral-900 border border-neutral-800 hover:border-white/30 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white w-full aspect-video overflow-hidden transition-colors duration-300 cursor-zoom-in'
+					onClick={openLightbox}
+				>
+					<For each={props.images}>
+						{(image, index) => (
+							<img
+								ref={(el) => (slides[index()] = el)}
+								loading={index() === 0 ? 'eager' : 'lazy'}
+								decoding='async'
+								alt={image.title}
+								src={image.src}
+								onError={onImageError}
+								draggable={false}
+								class={cn(
+									'absolute inset-0 w-full h-full object-cover transition-[scale] duration-500 ease-out group-hover:scale-[1.02]',
+									index() === selected() ? 'opacity-100' : 'opacity-0',
+								)}
+							/>
+						)}
+					</For>
+
+					<span class='right-4 bottom-4 absolute flex items-center gap-2 bg-black/60 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 backdrop-blur-sm px-3 py-1.5 font-light text-white text-xs uppercase tracking-widest transition-[opacity,translate] translate-y-1 group-hover:translate-y-0 duration-300'>
+						<Maximize2 size={12} />
+						Expand
+					</span>
+
+					<span class='top-2 left-2 absolute border-white/0 group-hover:border-white/50 border-t-2 border-l-2 w-5 h-5 transition-[border-color,translate] translate-x-1 translate-y-1 group-hover:translate-x-0 group-hover:translate-y-0 duration-300' />
+					<span class='top-2 right-2 absolute border-white/0 group-hover:border-white/50 border-t-2 border-r-2 w-5 h-5 transition-[border-color,translate] -translate-x-1 translate-y-1 group-hover:translate-x-0 group-hover:translate-y-0 duration-300' />
+					<span class='bottom-2 left-2 absolute border-white/0 group-hover:border-white/50 border-b-2 border-l-2 w-5 h-5 transition-[border-color,translate] translate-x-1 -translate-y-1 group-hover:translate-x-0 group-hover:translate-y-0 duration-300' />
+					<span class='right-2 bottom-2 absolute border-white/0 group-hover:border-white/50 border-r-2 border-b-2 w-5 h-5 transition-[border-color,translate] -translate-x-1 -translate-y-1 group-hover:translate-x-0 group-hover:translate-y-0 duration-300' />
+				</button>
+
+				<div class='flex items-center gap-4'>
+					<div class='flex flex-col flex-1 gap-0.5 min-w-0'>
+						<span class='font-medium text-white sm:text-lg truncate'>
+							{current()?.title}
+						</span>
+						<span class='text-neutral-400 text-sm truncate'>{current()?.subtitle}</span>
+					</div>
+
+					<Show when={count() > 1}>
+						<div class='flex items-center gap-1 shrink-0'>
+							<span class='mr-2 font-light text-neutral-400 text-xs tabular-nums uppercase tracking-widest'>
+								<span class='text-white'>{pad(selected() + 1)}</span> /{' '}
+								{pad(count())}
+							</span>
+							<button
+								type='button'
+								aria-label='Previous image'
+								class={navButton}
+								onClick={() => select(selected() - 1, -1)}
+							>
+								<span class='absolute inset-0 bg-white/10 scale-x-0 group-hover/nav:scale-x-100 origin-left transition-transform duration-300' />
+								<ArrowLeft class='relative' size={14} />
+							</button>
+							<button
+								type='button'
+								aria-label='Next image'
+								class={navButton}
+								onClick={() => select(selected() + 1, 1)}
+							>
+								<span class='absolute inset-0 bg-white/10 scale-x-0 group-hover/nav:scale-x-100 origin-left transition-transform duration-300' />
+								<ArrowRight class='relative' size={14} />
+							</button>
+						</div>
+					</Show>
+				</div>
+
+				<Show when={count() > 1}>
+					<div
+						ref={stripRef}
+						class='flex gap-2 pb-1 overflow-x-auto [scrollbar-width:none]'
 					>
-						<div className='flex flex-col gap-1 overflow-hidden'>
-							<span className='font-semibold text-white text-sm sm:text-base md:text-lg lg:text-xl truncate'>
-								{images[selected].title}
-							</span>
-							<span className='text-neutral-300 text-xs md:text-sm'>
-								{images[selected].subtitle}
-							</span>
-						</div>
-						<div className='ml-auto group-hover:text-white transition-colors'>
-							<ArrowUpDown size={24} />
-						</div>
-					</Card>
-				</Dialog.Trigger>
-				{transitions((styles, item) =>
-					item ? (
-						<Dialog.Portal>
-							<Dialog.Overlay asChild forceMount>
-								<animated.div
-									style={{ opacity: styles.opacity }}
-									className='fixed inset-0 bg-black/50 backdrop-blur-sm'
-								/>
-							</Dialog.Overlay>
-							<Dialog.Content asChild forceMount>
-								<animated.div
-									style={{ opacity: styles.opacity, scale: styles.scale }}
-									className='top-1/2 left-1/2 fixed w-full max-w-xl -translate-x-1/2! -translate-y-1/2!'
-									onKeyDown={(event) => {
-										switch (event.key) {
-											case 'ArrowDown':
-												event.preventDefault();
-												moveDown();
-												event.stopPropagation();
-												break;
-
-											case 'ArrowUp':
-												event.preventDefault();
-												moveUp();
-												event.stopPropagation();
-												break;
-											case 'Enter':
-												if (!items.length) return;
-
-												setOpened(false);
-												setSelected(hovered);
-												break;
-										}
-									}}
+						<For each={props.images}>
+							{(image, index) => (
+								<button
+									type='button'
+									aria-label={image.title}
+									aria-current={index() === selected()}
+									class={cn(
+										'relative flex-1 bg-neutral-900 border min-w-28 max-w-44 aspect-video overflow-hidden transition-[opacity,border-color] duration-300 cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white',
+										index() === selected()
+											? 'border-white/60 opacity-100'
+											: 'border-neutral-800 opacity-50 hover:opacity-90 hover:border-white/30',
+									)}
+									onClick={() => select(index())}
 								>
-									<div className='bg-neutral-900 shadow-lg mx-6 sm:mx-0 border border-neutral-700 rounded-2xl'>
-										<input
-											type='text'
-											autoFocus={false}
-											placeholder='Search...'
-											className='z-20 bg-transparent px-6 sm:px-7 py-3 sm:py-4 border-neutral-800 border-b outline-hidden w-full text-white placeholder:text-neutral-500 text-sm sm:text-base'
-											onChange={(event) => setSearch(event.target.value)}
-											value={search}
-										/>
-										<div
-											ref={listRef}
-											className='z-0 relative flex flex-col px-3 sm:px-4 py-2 sm:py-3 w-full h-full max-h-80 overflow-auto'
-										>
-											{/* Highlight */}
-											{items.length !== 0 && (
-												<animated.div
-													className='z-10 absolute bg-white/10 rounded-lg sm:rounded-xl w-full h-[87.5px]'
-													style={{
-														width: animation.width,
-														height: animation.height,
-														top: animation.top,
-													}}
-												/>
-											)}
-											{items.length === 0 && (
-												<div className='p-12 text-center'>
-													No items found containing{' '}
-													<b>'{search.toLowerCase()}'.</b>
-												</div>
-											)}
-											{items.map((image, index) => (
-												<div
-													key={image.src + index}
-													className='z-10 relative flex items-center gap-3 p-1.5 sm:p-2 cursor-pointer'
-													ref={(r) => {
-														if (!r || hovered !== index) return;
+									<img
+										loading='lazy'
+										decoding='async'
+										alt=''
+										src={image.src}
+										onError={onImageError}
+										draggable={false}
+										class='absolute inset-0 w-full h-full object-cover'
+									/>
+								</button>
+							)}
+						</For>
+					</div>
+				</Show>
+			</div>
 
-														ref.current = r;
-
-														if (initialMount.current) {
-															initialMount.current = false;
-															animateProperties(r, true);
-														}
-													}}
-													onClick={() => {
-														setOpened(false);
-														setSelected(index);
-													}}
-													onMouseLeave={() => setLocked(false)}
-													onMouseEnter={() => {
-														if (!locked) {
-															setHovered(index);
-														}
-													}}
-												>
-													<div className='relative bg-neutral-900 rounded-md w-24 sm:w-32 h-13.5 sm:h-18 overflow-hidden'>
-														<img
-															alt={`Media ${image.src}`}
-															loading='lazy'
-															decoding='async'
-															onError={(event) =>
-																((
-																	event.target as HTMLImageElement
-																).src =
-																	'/img/projects/fallback.png')
-															}
-															src={image.src}
-															className='shadow-none border-none outline-hidden max-w-none object-cover scale-[1.02]'
-															style={{
-																position: 'absolute',
-																height: '100%',
-																width: '100%',
-																inset: 0,
-																color: 'transparent',
-															}}
-														></img>
-													</div>
-													<div className='flex-1'>
-														<div className='font-medium text-white sm:text-md text-sm'>
-															{image.title}
-														</div>
-														<div className='text-neutral-500 text-xs'>
-															{image.subtitle}
-														</div>
-													</div>
-												</div>
-											))}
-										</div>
-										{(footer.enabled ?? true) && (
-											<div className='flex justify-between items-center px-6 sm:px-7 py-3 sm:py-4 border-neutral-800 border-t w-full'>
-												{footer.subtitle && (
-													<div className='font-medium text-neutral-500 text-xs sm:text-sm'>
-														{footer.subtitle}
-													</div>
-												)}
-												{(footer.hint ?? true) && (
-													<div className='flex items-center gap-2 font-medium text-white text-xs sm:text-sm'>
-														View Media
-														<div className='flex justify-center items-center bg-white/5 px-2 pt-1 rounded-md text-xs'>
-															↵
-														</div>
-													</div>
-												)}
-											</div>
-										)}
-									</div>
-								</animated.div>
-							</Dialog.Content>
-						</Dialog.Portal>
-					) : null,
-				)}
-			</Dialog.Root>
-		</>
+			<Lightbox
+				images={props.images}
+				index={() => selected()}
+				open={() => lightboxOpen()}
+				onOpenChange={setLightboxOpen}
+				onIndexChange={select}
+				sourceRect={() => sourceRect()}
+			/>
+		</Show>
 	);
 }
 

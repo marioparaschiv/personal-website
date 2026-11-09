@@ -1,22 +1,30 @@
-import type { PluginOption, UserConfig } from 'vite';
+import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
+import remarkMdxFrontmatter from 'remark-mdx-frontmatter';
+import remarkFrontmatter from 'remark-frontmatter';
 import compression from 'vite-plugin-compression';
 import tailwindcss from '@tailwindcss/vite';
-import react from '@vitejs/plugin-react';
-import paths from 'vite-tsconfig-paths';
+import type { UserConfig } from 'vite';
+import solid from 'vite-plugin-solid';
+import mdx from '@mdx-js/rollup';
 import path from 'node:path';
 
-// https://vitejs.dev/config/
 const config: UserConfig = {
 	plugins: [
+		{
+			enforce: 'pre',
+			...mdx({ jsx: true, remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter] }),
+		},
+		TanStackRouterVite({
+			target: 'solid',
+			autoCodeSplitting: true,
+		}),
 		tailwindcss(),
-		paths() as PluginOption,
 		compression(),
-		react({ babel: { plugins: ['babel-plugin-react-compiler'] } }),
+		solid({ extensions: ['.mdx'] }),
 	],
-	build: {
-		minify: 'esbuild',
-	},
 	resolve: {
+		conditions: ['solid'],
+		tsconfigPaths: true,
 		alias: [
 			{ find: '~', replacement: path.resolve(__dirname, 'src') },
 			{ find: '@', replacement: __dirname },

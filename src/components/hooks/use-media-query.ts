@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { createSignal, onCleanup, onMount } from 'solid-js';
+import type { Accessor } from 'solid-js';
 
 const cache = new Map<string, MediaQueryList>();
 
@@ -12,28 +13,29 @@ function getMatcher(query: string): MediaQueryList {
 	return matcher;
 }
 
-export default function useMediaQuery(query: string): boolean {
+export default function useMediaQuery(query: string): Accessor<boolean> {
 	const media = getMatcher(query);
-	const [state, setState] = useState(media.matches);
+	const [state, setState] = createSignal(media.matches);
 
-	useEffect(() => {
-		const callback = () => setState(media.matches);
+	const callback = () => setState(media.matches);
 
+	onMount(() => {
 		media.addEventListener('change', callback);
-		return () => media.removeEventListener('change', callback);
 	});
+
+	onCleanup(() => media.removeEventListener('change', callback));
 
 	return state;
 }
 
-export function usePrefersDark(): boolean {
+export function usePrefersDark(): Accessor<boolean> {
 	return useMediaQuery('(prefers-color-scheme: dark)');
 }
 
-export function usePrefersLight(): boolean {
+export function usePrefersLight(): Accessor<boolean> {
 	return useMediaQuery('(prefers-color-scheme: light)');
 }
 
-export function usePrefersReducedMotion(): boolean {
+export function usePrefersReducedMotion(): Accessor<boolean> {
 	return useMediaQuery('(prefers-reduced-motion)');
 }

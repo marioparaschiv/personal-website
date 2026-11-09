@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { createSignal, onCleanup, onMount } from 'solid-js';
+import type { Accessor } from 'solid-js';
 
 type Breakpoint = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 
@@ -22,22 +23,28 @@ function resolve(breakpoint: Breakpoint) {
 	return value;
 }
 
-function useBreakpoint(breakpoint: Breakpoint) {
+function useBreakpoint(breakpoint: Breakpoint): Accessor<boolean> {
 	const value = resolve(breakpoint);
-	const [matches, setMatches] = useState(
-		() => !!value && window.matchMedia(`(min-width: ${value})`).matches,
+	const [matches, setMatches] = createSignal(
+		!!value && window.matchMedia(`(min-width: ${value})`).matches,
 	);
 
-	useEffect(() => {
+	let mql: MediaQueryList | undefined;
+	let onChange: (() => void) | undefined;
+
+	onMount(() => {
 		if (!value) return;
 
-		const mql = window.matchMedia(`(min-width: ${value})`);
+		mql = window.matchMedia(`(min-width: ${value})`);
 		setMatches(mql.matches);
 
-		const onChange = () => setMatches(mql.matches);
+		onChange = () => setMatches(mql!.matches);
 		mql.addEventListener('change', onChange);
-		return () => mql.removeEventListener('change', onChange);
-	}, [value]);
+	});
+
+	onCleanup(() => {
+		if (mql && onChange) mql.removeEventListener('change', onChange);
+	});
 
 	return matches;
 }

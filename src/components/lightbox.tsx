@@ -1,0 +1,384 @@
+import { Show, createSignal, on, onCleanup, onMount, createEffect } from 'solid-js';
+import { ArrowLeft, ArrowRight, X } from 'lucide-solid';
+import { Dialog } from '@kobalte/core/dialog';
+import type { Accessor } from 'solid-js';
+
+import { usePrefersReducedMotion } from '~/components/hooks/use-media-query';
+
+import createZoom from './lightbox-zoom';
+
+interface Image {
+	src: string;
+	title: string;
+	subtitle: string;
+}
+
+interface LightboxProps {
+	images: Image[];
+	index: Accessor<number>;
+	open: Accessor<boolean>;
+	onOpenChange: (open: boolean) => void;
+	onIndexChange?: (index: number) => void;
+	sourceRect: Accessor<DOMRect | null>;
+}
+
+function computeFlipTransform(from: DOMRect, to: DOMRect): string {
+	const scaleX = from.width / to.width;
+	const scaleY = from.height / to.height;
+	const dx = from.left + from.width / 2 - (to.left + to.width / 2);
+	const dy = from.top + from.height / 2 - (to.top + to.height / 2);
+
+	return `translate(${dx}px, ${dy}px) scale(${scaleX}, ${scaleY})`;
+}
+
+function Lightbox(props: LightboxProps) {
+	const reducedMotion = usePrefersReducedMotion();
+
+	const [activeIndex, setActiveIndex] = createSignal(0);
+	const [animating, setAnimating] = createSignal(false);
+	const [crossFading, setCrossFading] = createSignal(false);
+	const [transitioning, setTransitioning] = createSignal(false);
+	const [transform, setTransform] = createSignal<string | undefined>(undefined);
+	const [imgOpacity, setImgOpacity] = createSignal(1);
+	const [overlayOpacity, setOverlayOpacity] = createSignal(0);
+
+	let boxRef: HTMLDivElement | undefined;
+	let innerImgRef: HTMLImageElement | undefined;
+	let touchStartX = 0;
+	let navigation = 0;
+
+	const zoom = createZoom(
+		() => boxRef,
+		() => innerImgRef,
+	);
+
+	const image = () => props.images[activeIndex()];
+	const hasMultiple = () => props.images.length > 1;
+
+	createEffect(
+		on(
+			() => props.open(),
+			(open) => {
+				if (!open) return;
+				zoom.reset(true);
+				setActiveIndex(props.index());
+			},
+		),
+	);
+
+	function runFlip(rect: DOMRect) {
+		if (!boxRef) return;
+
+		setAnimating(true);
+
+		const to = boxRef.getBoundingClientRect();
+		const flip = computeFlipTransform(rect, to);
+
+		setTransitioning(false);
+		setTransform(flip);
+		setImgOpacity(1);
+
+		boxRef.offsetHeight;
+
+		setTransitioning(true);
+		setTransform(undefined);
+
+		const onEnd = (e: TransitionEvent) => {
+			if (e.propertyName !== 'transform') return;
+			boxRef?.removeEventListener('transitionend', onEnd);
+			setAnimating(false);
+		};
+
+		boxRef?.addEventListener('transitionend', onEnd);
+	}
+
+	function playOpen() {
+		setOverlayOpacity(1);
+
+		const rect = props.sourceRect();
+		if (!rect || !boxRef || reducedMotion()) {
+			setImgOpacity(1);
+			setTransitioning(true);
+			return;
+		}
+
+		const to = boxRef.getBoundingClientRect();
+
+		if (to.width === 0 || to.height === 0) {
+			setImgOpacity(0);
+
+			const settle = () => {
+				innerImgRef?.removeEventListener('load', settle);
+				innerImgRef?.removeEventListener('error', settle);
+				requestAnimationFrame(() => runFlip(rect));
+			};
+
+			innerImgRef?.addEventListener('load', settle);
+			innerImgRef?.addEventListener('error', settle);
+			return;
+		}
+
+		runFlip(rect);
+	}
+
+	function close() {
+		if (animating()) return;
+
+		zoom.reset(true);
+		setOverlayOpacity(0);
+
+		const rect = props.sourceRect();
+		if (!rect || !boxRef || reducedMotion()) {
+			setTimeout(() => {
+				props.onOpenChange(false);
+				setTransitioning(false);
+			}, 300);
+			return;
+		}
+
+		setAnimating(true);
+		setTransitioning(true);
+
+		const from = boxRef.getBoundingClientRect();
+		setTransform(computeFlipTransform(rect, from));
+
+		const onEnd = (e: TransitionEvent) => {
+			if (e.propertyName !== 'transform') return;
+			boxRef?.removeEventListener('transitionend', onEnd);
+			setImgOpacity(0);
+			requestAnimationFrame(() => {
+				requestAnimationFrame(() => {
+					setAnimating(false);
+					setTransitioning(false);
+					setTransform(undefined);
+					setImgOpacity(1);
+					props.onOpenChange(false);
+				});
+			});
+		};
+
+		boxRef?.addEventListener('transitionend', onEnd);
+	}
+
+	function navigate(delta: number) {
+		const img = innerImgRef;
+
+		if (animating() || !hasMultiple() || !img) return;
+
+		const next = (activeIndex() + delta + props.images.length) % props.images.length;
+		const run = ++navigation;
+
+		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const shift = reduced ? 0 : 10 * Math.sign(delta);
+		const blur = reduced ? 0 : 12;
+		const still = { opacity: 1, translate: '0 0', filter: 'blur(0px)' };
+
+		const swapIn = async () => {
+			zoom.reset(true);
+			setActiveIndex(next);
+			props.onIndexChange?.(next);
+
+			await img.decode().catch(() => {});
+
+			if (run !== navigation) return;
+
+			for (const running of img.getAnimations()) running.cancel();
+
+			const into = img.animate(
+				[{ opacity: 0, translate: `${shift}% 0`, filter: `blur(${blur}px)` }, still],
+				{ duration: reduced ? 200 : 380, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' },
+			);
+
+			into.onfinish = () => {
+				if (run === navigation) setCrossFading(false);
+			};
+		};
+
+		// Mid-swoosh, skip straight to the next image so rapid presses never queue up or wait.
+		if (crossFading()) {
+			void swapIn();
+
+			return;
+		}
+
+		setCrossFading(true);
+
+		// One image element: streak it out, swap the source, then streak the next one in from the other side.
+		const out = img.animate(
+			[still, { opacity: 0, translate: `${-shift}% 0`, filter: `blur(${blur}px)` }],
+			{
+				duration: reduced ? 120 : 170,
+				easing: 'cubic-bezier(0.5, 0, 0.75, 0)',
+				fill: 'forwards',
+			},
+		);
+
+		out.onfinish = () => {
+			if (run === navigation) void swapIn();
+		};
+	}
+
+	function onKeyDown(e: KeyboardEvent) {
+		switch (e.key) {
+			case 'ArrowLeft':
+				e.preventDefault();
+				navigate(-1);
+				break;
+			case 'ArrowRight':
+				e.preventDefault();
+				navigate(1);
+				break;
+		}
+	}
+
+	function onTouchStart(e: TouchEvent) {
+		touchStartX = e.touches[0].clientX;
+	}
+
+	function onTouchEnd(e: TouchEvent) {
+		const delta = e.changedTouches[0].clientX - touchStartX;
+		if (Math.abs(delta) > 50 && !zoom.zoomed()) {
+			navigate(delta > 0 ? -1 : 1);
+		}
+	}
+
+	onMount(() => {
+		const handler = (e: KeyboardEvent) => {
+			if (props.open()) onKeyDown(e);
+		};
+
+		window.addEventListener('keydown', handler);
+		onCleanup(() => window.removeEventListener('keydown', handler));
+	});
+
+	return (
+		<Dialog
+			open={props.open()}
+			onOpenChange={(open) => {
+				if (!open) close();
+			}}
+		>
+			<Dialog.Portal>
+				<Dialog.Overlay
+					class='fixed inset-0 z-50 bg-black/90 backdrop-blur-sm transition-opacity duration-300 ease-in-out'
+					style={{ opacity: overlayOpacity() }}
+					onClick={close}
+				/>
+				<Dialog.Content
+					class='fixed inset-0 z-50 flex flex-col items-center justify-center outline-hidden'
+					onTouchStart={onTouchStart}
+					onTouchEnd={onTouchEnd}
+				>
+					<Dialog.Title class='sr-only'>{image()?.title}</Dialog.Title>
+
+					<div class='relative flex items-center justify-center w-full h-full p-4 sm:p-12'>
+						<Show when={image()}>
+							{(img) => (
+								<div
+									ref={(el) => {
+										boxRef = el;
+										// Wheel needs a non-passive listener so it can zoom instead of scrolling the page.
+										el.addEventListener('wheel', zoom.handlers.onWheel, {
+											passive: false,
+										});
+										if (props.open()) {
+											requestAnimationFrame(() => playOpen());
+										}
+									}}
+									classList={{
+										'relative w-[min(90vw,calc((100dvh-10rem)*16/9))] aspect-video select-none touch-none': true,
+										'lightbox-transition': transitioning(),
+									}}
+									style={{
+										transform: transform(),
+										opacity: imgOpacity(),
+										cursor: zoom.cursor(),
+									}}
+									onPointerDown={zoom.handlers.onPointerDown}
+									onPointerMove={zoom.handlers.onPointerMove}
+									onPointerUp={zoom.handlers.onPointerUp}
+									onPointerCancel={zoom.handlers.onPointerCancel}
+								>
+									<img
+										ref={innerImgRef}
+										src={img().src}
+										alt={img().title}
+										class='absolute w-full h-full object-cover'
+										onError={(e) => {
+											(e.currentTarget as HTMLImageElement).src =
+												'/img/projects/fallback.png';
+										}}
+										draggable={false}
+									/>
+								</div>
+							)}
+						</Show>
+					</div>
+
+					<Dialog.CloseButton
+						class='fixed top-4 right-4 z-50 group/nav overflow-hidden p-2 border border-transparent hover:border-white/30 text-white/70 hover:text-white focus-visible:outline-hidden focus-visible:border-white/60 transition-[color,opacity,border-color] duration-300 cursor-pointer'
+						style={{ opacity: overlayOpacity() }}
+						onClick={(e: MouseEvent) => {
+							e.stopPropagation();
+							close();
+						}}
+						aria-label='Close lightbox'
+					>
+						<span class='absolute inset-0 bg-white/10 scale-x-0 group-hover/nav:scale-x-100 origin-left transition-transform duration-300' />
+						<X class='relative' size={20} />
+					</Dialog.CloseButton>
+
+					<Show when={hasMultiple()}>
+						<button
+							type='button'
+							class='fixed left-4 top-1/2 -translate-y-1/2 z-50 group/nav overflow-hidden p-2 border border-transparent hover:border-white/30 text-white/70 hover:text-white focus-visible:outline-hidden focus-visible:border-white/60 transition-[color,opacity,border-color] duration-300 cursor-pointer'
+							style={{ opacity: overlayOpacity() }}
+							onClick={() => navigate(-1)}
+							aria-label='Previous image'
+						>
+							<span class='absolute inset-0 bg-white/10 scale-x-0 group-hover/nav:scale-x-100 origin-left transition-transform duration-300' />
+							<ArrowLeft class='relative' size={20} />
+						</button>
+						<button
+							type='button'
+							class='fixed right-4 top-1/2 -translate-y-1/2 z-50 group/nav overflow-hidden p-2 border border-transparent hover:border-white/30 text-white/70 hover:text-white focus-visible:outline-hidden focus-visible:border-white/60 transition-[color,opacity,border-color] duration-300 cursor-pointer'
+							style={{ opacity: overlayOpacity() }}
+							onClick={() => navigate(1)}
+							aria-label='Next image'
+						>
+							<span class='absolute inset-0 bg-white/10 scale-x-0 group-hover/nav:scale-x-100 origin-left transition-transform duration-300' />
+							<ArrowRight class='relative' size={20} />
+						</button>
+					</Show>
+
+					<div
+						class='fixed bottom-0 left-0 right-0 z-50 flex flex-col items-center gap-1 pb-4 pointer-events-none transition-[opacity,transform] duration-300 ease-in-out'
+						style={{
+							opacity: overlayOpacity(),
+							transform:
+								overlayOpacity() === 1 ? 'translateY(0)' : 'translateY(1rem)',
+						}}
+					>
+						<Show when={hasMultiple()}>
+							<span class='font-light text-white/50 text-xs tabular-nums uppercase tracking-widest'>
+								<span class='text-white'>
+									{String(activeIndex() + 1).padStart(2, '0')}
+								</span>{' '}
+								/ {String(props.images.length).padStart(2, '0')}
+							</span>
+						</Show>
+						<Show when={image()}>
+							{(img) => (
+								<span class='text-white/70 text-sm text-center px-4 truncate max-w-sm'>
+									{img().title}
+								</span>
+							)}
+						</Show>
+					</div>
+				</Dialog.Content>
+			</Dialog.Portal>
+		</Dialog>
+	);
+}
+
+export default Lightbox;

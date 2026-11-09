@@ -1,6 +1,6 @@
-import type { SVGProps } from 'react';
+import type { JSX } from 'solid-js';
 
-export function Solid(props: SVGProps<SVGSVGElement>) {
+export function Solid(props: JSX.SvgSVGAttributes<SVGSVGElement>) {
 	return (
 		<svg
 			xmlns='http://www.w3.org/2000/svg'

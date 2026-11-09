@@ -1,6 +1,6 @@
-import type { SVGProps } from 'react';
+import type { JSX } from 'solid-js';
 
-function ShadCN(props: SVGProps<SVGSVGElement>) {
+function ShadCN(props: JSX.SvgSVGAttributes<SVGSVGElement>) {
 	return (
 		<svg
 			xmlns='http://www.w3.org/2000/svg'

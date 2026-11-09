@@ -1,22 +1,22 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { RouterProvider, createRouter } from '@tanstack/solid-router';
+import { MetaProvider } from '@solidjs/meta';
 
-import { Page } from '~/components/layout';
-import * as Pages from '~/pages';
+import { routeTree } from './routeTree.gen';
 
-const routes = Object.values(Pages).map(({ path, element: Component }: Page) => ({
-	path,
-	element: <Component />,
-}));
+const router = createRouter({ routeTree, defaultViewTransition: true });
 
-const router = createBrowserRouter([
-	{
-		element: <Page />,
-		children: routes.map(({ path, element }) => ({ path, element })),
-	},
-]);
+declare module '@tanstack/solid-router' {
+	interface Register {
+		router: typeof router;
+	}
+}
 
 function App() {
-	return <RouterProvider router={router} />;
+	return (
+		<MetaProvider>
+			<RouterProvider router={router} />
+		</MetaProvider>
+	);
 }
 
 export default App;

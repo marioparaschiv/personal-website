@@ -1,6 +1,6 @@
 import { cva, type VariantProps } from 'class-variance-authority';
-import { Slot } from '@radix-ui/react-slot';
-import * as React from 'react';
+import { type JSX, splitProps } from 'solid-js';
+import { Dynamic } from 'solid-js/web';
 
 import { cn } from '~/utils';
 
@@ -33,25 +33,30 @@ const ButtonVariants = cva(
 );
 
 export interface ButtonProps
-	extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof ButtonVariants> {
+	extends JSX.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof ButtonVariants> {
 	asChild?: boolean;
+	ref?: HTMLButtonElement | ((el: HTMLButtonElement) => void);
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-	({ className, variant, size, asChild = false, ...props }, ref) => {
-		const Comp = asChild ? Slot : 'button';
+function Button(props: ButtonProps) {
+	const [local, rest] = splitProps(props, ['class', 'variant', 'size', 'asChild', 'ref']);
 
-		return (
-			<Comp
-				className={cn('select-none', ButtonVariants({ variant, size, className }))}
-				ref={ref}
-				{...props}
-			/>
-		);
-	},
-);
-
-Button.displayName = 'Button';
+	return (
+		<Dynamic
+			component={local.asChild ? 'span' : 'button'}
+			class={cn(
+				'select-none',
+				ButtonVariants({
+					variant: local.variant,
+					size: local.size,
+					className: local.class,
+				}),
+			)}
+			ref={local.ref}
+			{...rest}
+		/>
+	);
+}
 
 export { Button, ButtonVariants };
 export default Button;

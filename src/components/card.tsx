@@ -1,17 +1,17 @@
 import { cva, type VariantProps } from 'class-variance-authority';
-import React, { useState } from 'react';
+import { type JSX, createSignal, splitProps } from 'solid-js';
 
 import { cn } from '~/utils';
 
-type CardProps = React.HTMLProps<HTMLDivElement> &
+type CardProps = JSX.HTMLAttributes<HTMLDivElement> &
 	VariantProps<typeof styles.highlights> & {
 		radius?: 'sm' | 'md' | 'lg';
-		contentClassName?: string | undefined;
+		contentClass?: string | undefined;
 	};
 
 const styles = {
 	container: cva(
-		'group/card relative flex bg-neutral-900/75 hover:shadow-black/5 hover:shadow-md backdrop-blur-lg p-6 rounded-2xl focus-visible:outline-hidden focus-visible:ring-none text-neutral-400 hover:scale-[1.03] transition-all duration-200 ease-out',
+		'group/card relative flex bg-neutral-900/75 hover:shadow-black/5 hover:shadow-md backdrop-blur-lg p-6 rounded-none focus-visible:outline-hidden focus-visible:ring-none text-neutral-400 hover:scale-[1.03] transition-all duration-200 ease-out',
 		{
 			variants: {
 				highlights: {
@@ -25,7 +25,7 @@ const styles = {
 		},
 	),
 	highlights: cva(
-		'absolute inset-0 opacity-0 saturate-200 rounded-2xl transition duration-200 ease-linear',
+		'absolute inset-0 opacity-0 saturate-200 rounded-none transition duration-200 ease-linear',
 		{
 			variants: {
 				highlights: {
@@ -42,7 +42,7 @@ const styles = {
 		},
 	),
 	border: cva(
-		'absolute inset-0 rounded-2xl focus-visible:outline-hidden ring-1 ring-white/10 focus-visible:ring-none ring-inset transition-all',
+		'absolute inset-0 rounded-none focus-visible:outline-hidden ring-1 ring-white/10 focus-visible:ring-none ring-inset transition-all',
 		{
 			variants: {
 				border: {
@@ -60,41 +60,46 @@ const styles = {
 	),
 };
 
-function Card({
-	children,
-	highlights,
-	radius = 'lg',
-	className,
-	contentClassName,
-	onMouseMove,
-	...props
-}: CardProps) {
-	const [mouseX, setMouseX] = useState(0);
-	const [mouseY, setMouseY] = useState(0);
+function Card(props: CardProps) {
+	const [local, rest] = splitProps(props, [
+		'children',
+		'highlights',
+		'radius',
+		'class',
+		'contentClass',
+		'onMouseMove',
+	]);
 
-	const maskImage = `radial-gradient(${radius === 'lg' ? '250px' : radius === 'md' ? '180px' : '100px'} at ${mouseX}px ${mouseY}px, white, transparent)`;
+	const [mouseX, setMouseX] = createSignal(0);
+	const [mouseY, setMouseY] = createSignal(0);
+
+	const radius = () => local.radius ?? 'lg';
+	const maskImage = () => {
+		const r = radius() === 'lg' ? '250px' : radius() === 'md' ? '180px' : '100px';
+		return `radial-gradient(${r} at ${mouseX()}px ${mouseY()}px, white, transparent)`;
+	};
 
 	return (
 		<div
-			{...props}
-			className={cn(styles.container({ highlights }), className)}
-			onMouseMove={({ currentTarget, clientX, clientY, ...rest }) => {
-				const rect = currentTarget.getBoundingClientRect();
+			{...rest}
+			class={cn(styles.container({ highlights: local.highlights }), local.class)}
+			onMouseMove={(event) => {
+				const rect = event.currentTarget.getBoundingClientRect();
 
-				setMouseX(clientX - rect.left);
-				setMouseY(clientY - rect.top);
+				setMouseX(event.clientX - rect.left);
+				setMouseY(event.clientY - rect.top);
 
-				if (typeof onMouseMove === 'function') {
-					onMouseMove({ currentTarget, clientX, clientY, ...rest });
+				if (typeof local.onMouseMove === 'function') {
+					local.onMouseMove(event);
 				}
 			}}
 		>
 			<div
-				className={styles.highlights({ highlights })}
-				style={{ maskImage, WebkitMaskImage: maskImage }}
+				class={styles.highlights({ highlights: local.highlights })}
+				style={{ 'mask-image': maskImage(), '-webkit-mask-image': maskImage() }}
 			/>
-			<div className={styles.border({ border: highlights })} />
-			<div className={cn('relative w-full h-full', contentClassName)}>{children}</div>
+			<div class={styles.border({ border: local.highlights })} />
+			<div class={cn('relative w-full h-full', local.contentClass)}>{local.children}</div>
 		</div>
 	);
 }

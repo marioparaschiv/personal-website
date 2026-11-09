@@ -1,12 +1,14 @@
 import { cva, type VariantProps } from 'class-variance-authority';
+import type { ParentProps } from 'solid-js';
+import { Dynamic } from 'solid-js/web';
 
 import { cn } from '~/utils';
 
-interface TypographyProps
-	extends VariantProps<typeof TypographyVariants>, React.HTMLProps<HTMLElement> {
+interface TypographyProps extends VariantProps<typeof TypographyVariants>, ParentProps {
 	margin?: boolean;
 	border?: boolean;
 	padding?: boolean;
+	class?: string;
 }
 
 const TypographyVariants = cva('truncate', {
@@ -35,29 +37,25 @@ const TypographyVariants = cva('truncate', {
 	},
 });
 
-export function Typography({
-	tag,
-	colour,
-	border = true,
-	margin = true,
-	padding = true,
-	children,
-	className,
-}: TypographyProps) {
-	const Tag = (tag as keyof JSX.IntrinsicElements) ?? 'p';
+export function Typography(props: TypographyProps) {
+	const tag = () => (props.tag as string) ?? 'p';
+	const border = () => props.border ?? true;
+	const margin = () => props.margin ?? true;
+	const padding = () => props.padding ?? true;
 
 	return (
-		<Tag
-			className={cn(
-				TypographyVariants({ tag, colour }),
-				className,
-				!margin && 'm-0!',
-				!border && 'border-none!',
-				!padding && 'p-0!',
+		<Dynamic
+			component={tag()}
+			class={cn(
+				TypographyVariants({ tag: props.tag, colour: props.colour }),
+				props.class,
+				!margin() && 'm-0!',
+				!border() && 'border-none!',
+				!padding() && 'p-0!',
 			)}
 		>
-			{children}
-		</Tag>
+			{props.children}
+		</Dynamic>
 	);
 }
 
