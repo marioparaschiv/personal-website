@@ -22,9 +22,6 @@ const config: UserConfig = {
 		compression(),
 		solid({ extensions: ['.mdx'] }),
 	],
-	build: {
-		minify: 'esbuild',
-	},
 	resolve: {
 		conditions: ['solid'],
 		tsconfigPaths: true,
