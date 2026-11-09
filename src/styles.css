@@ -105,37 +105,20 @@
 	}
 }
 
-@keyframes hero-grain {
-	0% {
-		translate: 0 0;
-	}
-
-	20% {
-		translate: -5% 3%;
-	}
-
-	40% {
-		translate: 4% -6%;
-	}
-
-	60% {
-		translate: -3% 5%;
-	}
-
-	80% {
-		translate: 6% 2%;
+@keyframes wire-draw {
+	from {
+		stroke-dashoffset: 100;
 	}
 }
 
-@keyframes hero-breathe {
+/* The gap outlasts the path, so a single pulse travels from the source into the node. */
+@keyframes wire-pulse {
 	from {
-		opacity: 0.6;
-		scale: 0.95;
+		stroke-dashoffset: 14;
 	}
 
 	to {
-		opacity: 1;
-		scale: 1.05;
+		stroke-dashoffset: -100;
 	}
 }
 

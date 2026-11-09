@@ -1,18 +1,28 @@
+import Beams from '~/components/effects/beams';
 import { site } from '~/content/site';
 
-import HeroBackground, { type HeroBackgroundVariant } from './hero-backgrounds';
 import ScrollHint from './scroll-hint';
 
 interface HeroSectionProps {
 	contentRef: (el: HTMLDivElement) => void;
 	onScrollDown: () => void;
-	background: HeroBackgroundVariant;
 }
 
 function HeroSection(props: HeroSectionProps) {
 	return (
 		<section class='relative bg-black h-full shrink-0'>
-			<HeroBackground variant={props.background} />
+			<div class='z-0 absolute inset-0 bg-black opacity-50 animate-in duration-1000 ease-out fade-in'>
+				<Beams
+					beamWidth={3}
+					beamHeight={30}
+					beamNumber={12}
+					lightColor='#ffffff'
+					speed={2}
+					noiseIntensity={1.75}
+					scale={0.2}
+					rotation={35}
+				/>
+			</div>
 			<div
 				ref={props.contentRef}
 				class='z-10 relative flex flex-col justify-center items-center gap-4 drop-shadow-2xl drop-shadow-black w-full h-full overflow-x-clip'

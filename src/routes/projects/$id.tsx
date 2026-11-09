@@ -9,6 +9,8 @@ import mdxComponents from '~/components/mdx';
 import Media from '~/components/media';
 import { site } from '~/content/site';
 
+import IngestWires from './-components/ingest-wires';
+
 function Project() {
 	const params = useParams({ from: '/projects/$id' });
 	const navigate = useNavigate();
@@ -51,6 +53,10 @@ function Project() {
 						<Title>
 							{p().name} - {site.name}
 						</Title>
+
+						<Show when={p().id === 'telecord'}>
+							<IngestWires />
+						</Show>
 
 						<div class='top-6 left-6 z-30 fixed'>
 							<button

@@ -8,22 +8,11 @@ import { prefetchSlots } from '~/components/booking/defaults';
 import { site } from '~/content/site';
 import { cn } from '~/utils';
 
-import {
-	HERO_BACKGROUND_VARIANTS,
-	type HeroBackgroundVariant,
-} from './-components/home/hero-backgrounds';
 import OtherWorkSection from './-components/home/other-work-section';
 import ProjectsSection from './-components/home/projects-section';
 import HeroSection from './-components/home/hero-section';
 
 const SECTIONS = ['Intro', 'Featured Work', 'Other Work'] as const;
-
-// Temporary: `?bg=<variant>` previews hero background candidates until one is picked.
-function previewBackground(): HeroBackgroundVariant | null {
-	const requested = new URLSearchParams(window.location.search).get('bg');
-
-	return HERO_BACKGROUND_VARIANTS.find((variant) => variant === requested) ?? null;
-}
 
 const corner =
 	'absolute w-2 h-2 border-white/0 group-hover:border-white/60 group-focus-visible:border-white/60 transition-[border-color,translate] duration-300';
@@ -83,8 +72,6 @@ function HireMe() {
 }
 
 function Home() {
-	const background = previewBackground();
-
 	let containerRef!: HTMLDivElement;
 	let heroContentRef!: HTMLDivElement;
 	let projectsContentRef!: HTMLDivElement;
@@ -116,7 +103,7 @@ function Home() {
 	onMount(() => {
 		const timer = setTimeout(() => {
 			// Skip if the visitor already scrolled or the browser restored a scroll position.
-			if (!background && activeSection() === 0 && containerRef.scrollTop === 0) snapTo(1);
+			if (activeSection() === 0 && containerRef.scrollTop === 0) snapTo(1);
 		}, 1000);
 
 		onCleanup(() => clearTimeout(timer));
@@ -170,7 +157,6 @@ function Home() {
 			<HeroSection
 				contentRef={(el: HTMLDivElement) => (heroContentRef = el)}
 				onScrollDown={() => snapTo(1)}
-				background={background ?? 'beams'}
 			/>
 			<ProjectsSection
 				contentRef={(el: HTMLDivElement) => (projectsContentRef = el)}
