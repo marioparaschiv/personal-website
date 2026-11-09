@@ -243,13 +243,15 @@ function Dither(props: DitherProps) {
 		const mousePos = new THREE.Vector2();
 
 		const canvas = renderer.domElement;
+
+		// Listen on window: page content sits above the canvas and would swallow canvas events.
 		function handlePointerMove(e: PointerEvent) {
 			if (!enableMouseInteraction) return;
 			const rect = canvas.getBoundingClientRect();
 			const dpr = renderer.getPixelRatio();
 			mousePos.set((e.clientX - rect.left) * dpr, (e.clientY - rect.top) * dpr);
 		}
-		canvas.addEventListener('pointermove', handlePointerMove);
+		window.addEventListener('pointermove', handlePointerMove);
 
 		const resizeObserver = new ResizeObserver(() => updateSize());
 		resizeObserver.observe(container);
@@ -287,7 +289,7 @@ function Dither(props: DitherProps) {
 		});
 
 		onCleanup(() => {
-			canvas.removeEventListener('pointermove', handlePointerMove);
+			window.removeEventListener('pointermove', handlePointerMove);
 			resizeObserver.disconnect();
 			planeGeometry.dispose();
 			waveMaterial.dispose();

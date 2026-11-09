@@ -4,16 +4,12 @@
 	"location": "London, United Kingdom",
 	"links": {
 		"email": {
-			"text": "me@marioparaschiv.com",
-			"href": "mailto:me@marioparaschiv.com"
+			"text": "contact@marioparaschiv.com",
+			"href": "mailto:contact@marioparaschiv.com"
 		},
 		"github": {
 			"text": "marioparaschiv",
 			"href": "https://github.com/marioparaschiv"
-		},
-		"linkedin": {
-			"text": "in/marioparaschiv",
-			"href": "https://linkedin.com/in/marioparaschiv"
 		},
 		"twitter": {
 			"text": "marioparaschiv",
@@ -33,13 +29,7 @@
 			},
 			"repository": "https://github.com/unbound-app",
 			"url": "https://unbound.rip",
-			"technologies": [
-				"TypeScript",
-				"Objective C",
-				"Kotlin",
-				"React Native",
-				"Go"
-			],
+			"technologies": ["TypeScript", "Objective C", "Kotlin", "React Native", "Go"],
 			"icon": {
 				"path": "/img/projects/unbound/icon.png",
 				"styles": ""
@@ -65,13 +55,7 @@
 			},
 			"repository": null,
 			"url": null,
-			"technologies": [
-				"TypeScript",
-				"React",
-				"Postgres",
-				"Redis",
-				"Docker"
-			],
+			"technologies": ["TypeScript", "React", "Postgres", "Redis", "Docker"],
 			"icon": {
 				"path": "/img/projects/telecord/icon.png",
 				"styles": ""

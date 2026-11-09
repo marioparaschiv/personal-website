@@ -29,16 +29,29 @@ const DarkVeilContext = createContext<DarkVeilContextValue>({
 function DarkVeilProvider(props: ParentProps) {
 	const [hueShift, setHueShift] = createSignal<number | null>(null);
 	const [target, setTarget] = createSignal(0);
+	const [mounted, setMounted] = createSignal(false);
 
+	// Switching projects remounts the route, so the hue briefly goes null before the next page
+	// sets it. Hiding only once it stays null keeps one canvas alive and lets the hue blend.
 	createEffect(() => {
 		const h = hueShift();
-		if (h !== null) setTarget(h);
+
+		if (h !== null) {
+			setTarget(h);
+			setMounted(true);
+
+			return;
+		}
+
+		const timer = setTimeout(() => setMounted(false), 100);
+
+		onCleanup(() => clearTimeout(timer));
 	});
 
 	return (
 		<DarkVeilContext.Provider value={{ hueShift, setHueShift, target, setTarget }}>
 			{props.children}
-			<Show when={hueShift() !== null}>
+			<Show when={mounted()}>
 				<div class='absolute inset-x-0 top-0 z-0 h-dvh'>
 					<DarkVeil target={target} speed={0.3} warpAmount={0.5} />
 				</div>
@@ -50,10 +63,10 @@ function DarkVeilProvider(props: ParentProps) {
 function useDarkVeil(hueShift: () => number | null) {
 	const { setHueShift } = useContext(DarkVeilContext);
 
-	createEffect(() => {
-		setHueShift(hueShift());
-		onCleanup(() => setHueShift(null));
-	});
+	// Clearing only on unmount matters: clearing on every change briefly hid the veil, which
+	// remounted it at the new hue and skipped the blend between projects.
+	createEffect(() => setHueShift(hueShift()));
+	onCleanup(() => setHueShift(null));
 }
 
 const vertexShader = `
@@ -200,10 +213,11 @@ function DarkVeil(props: DarkVeilProps) {
 		observer.observe(container);
 		updateViewportSize();
 
-		three.startLoop((_delta, elapsed) => {
+		three.startLoop((delta, elapsed) => {
 			uniforms.uTime.value = elapsed * speed;
 
-			currentHue.lerp(toVector(props.target()), 0.05);
+			// Time-based easing so the blend takes the same ~1s on 60Hz and 120Hz screens.
+			currentHue.lerp(toVector(props.target()), 1 - Math.exp(-delta * 3));
 			uniforms.uHueRot.value.copy(currentHue);
 
 			uniforms.uNoise.value = noiseIntensity;

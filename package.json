@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"private": true,
 	"license": "Unlicensed",
-	"author": "Mario <me@marioparaschiv.com> (github.com/marioparaschiv)",
+	"author": "Mario <contact@marioparaschiv.com> (github.com/marioparaschiv)",
 	"type": "module",
 	"scripts": {
 		"lint": "oxlint --config .oxlintrc.json .",

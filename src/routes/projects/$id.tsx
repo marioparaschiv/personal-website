@@ -100,18 +100,32 @@ function Project() {
 								<img
 									src={p().icon.path}
 									alt={p().name}
-									class={`mb-5 rounded-lg h-16 drop-shadow-xl ${p().icon.styles}`}
+									class={`mb-5 rounded-lg h-16 drop-shadow-xl stagger ${p().icon.styles}`}
 								/>
-								<h1 class='mb-1 font-semibold text-4xl text-white tracking-tight'>
+								<h1
+									class='mb-1 font-semibold text-4xl text-white tracking-tight stagger'
+									style={{ '--stagger': '1' }}
+								>
 									{p().name}
 								</h1>
-								<p class='mb-1 text-lg text-neutral-400'>{p().type}</p>
-								<p class='mb-3 text-neutral-500 text-sm'>{p().timeFrame}</p>
+								<p
+									class='mb-1 text-lg text-neutral-400 stagger'
+									style={{ '--stagger': '2' }}
+								>
+									{p().type}
+								</p>
+								<p
+									class='mb-3 text-neutral-500 text-sm stagger'
+									style={{ '--stagger': '2' }}
+								>
+									{p().timeFrame}
+								</p>
 
 								<Show when={p().badge}>
 									{(badge) => (
 										<span
-											class={`inline-block px-3 py-1 border text-xs font-medium mb-5 ${badge().styles}`}
+											class={`inline-block px-3 py-1 border text-xs font-medium mb-5 stagger ${badge().styles}`}
+											style={{ '--stagger': '3' }}
 										>
 											{badge().text}
 										</span>
@@ -119,7 +133,10 @@ function Project() {
 								</Show>
 
 								<Show when={p().repository || p().url}>
-									<div class='flex gap-3 mt-5'>
+									<div
+										class='flex gap-3 mt-5 stagger'
+										style={{ '--stagger': '3' }}
+									>
 										<Show when={p().repository}>
 											{(repo) => (
 												<a
@@ -151,9 +168,12 @@ function Project() {
 								</Show>
 							</header>
 
-							<div class='mx-auto mb-12 border-neutral-800 border-t w-16' />
+							<div
+								class='mx-auto mb-12 border-neutral-800 border-t w-16 stagger'
+								style={{ '--stagger': '4' }}
+							/>
 
-							<section class='mb-12'>
+							<section class='mb-12 stagger' style={{ '--stagger': '5' }}>
 								<Show
 									when={Content()}
 									keyed
@@ -166,7 +186,7 @@ function Project() {
 							</section>
 
 							<Show when={p().images.length > 0}>
-								<section>
+								<section class='stagger' style={{ '--stagger': '6' }}>
 									<h2 class='mb-4 font-semibold text-white text-2xl tracking-tight'>
 										Gallery
 									</h2>

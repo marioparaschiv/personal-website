@@ -1,25 +1,25 @@
-import { WheelGesturesPlugin } from 'embla-carousel-wheel-gestures';
-import { For } from 'solid-js';
+import { useNavigate } from '@tanstack/solid-router';
 
-import {
-	Carousel,
-	CarouselContent,
-	CarouselItem,
-	CarouselNext,
-	CarouselPrevious,
-} from '~/components/carousel';
+import AlbumRail, { type AlbumRailItem } from '~/components/album-rail/album-rail';
 import { projects } from '~/content/projects';
 
-import CarouselDots from './carousel-dots';
-import ProjectCard from './project-card';
 import ScrollHint from './scroll-hint';
 
-interface ProjectsSectionProps {
+type ProjectsSectionProps = {
 	contentRef: (el: HTMLDivElement) => void;
 	onScrollDown: () => void;
-}
+};
+
+const items: AlbumRailItem[] = projects.map((project) => ({
+	src: project.thumbnail,
+	alt: project.name,
+	title: project.name,
+	subtitle: `${project.type} · ${project.timeFrame}`,
+}));
 
 function ProjectsSection(props: ProjectsSectionProps) {
+	const navigate = useNavigate();
+
 	return (
 		<section class='relative flex justify-center items-center h-full overflow-hidden shrink-0'>
 			<div
@@ -35,40 +35,15 @@ function ProjectsSection(props: ProjectsSectionProps) {
 			/>
 			<div
 				ref={props.contentRef}
-				class='z-10 relative flex flex-col justify-center items-center w-full h-full'
+				class='z-10 relative flex flex-col justify-center items-center pt-28 pb-36 w-full h-full'
 				style={{ opacity: 0 }}
 			>
-				<div class='relative flex flex-col items-center gap-16 w-full h-full'>
-					<Carousel
-						plugins={[WheelGesturesPlugin({ active: true })]}
-						class='flex flex-col justify-center items-center h-full'
-						opts={{
-							align: 'center',
-							startIndex: Math.floor(projects.length / 2),
-							skipSnaps: true,
-							loop: true,
-						}}
-					>
-						<div class='flex flex-col'>
-							<CarouselContent class='[&>div]:flex [&>div]:justify-center [&>div]:items-center'>
-								<For each={projects}>
-									{(project) => (
-										<CarouselItem>
-											<ProjectCard {...project} />
-										</CarouselItem>
-									)}
-								</For>
-							</CarouselContent>
-						</div>
-						<div class='bottom-0 absolute flex justify-center my-12! mb-24 px-12 w-full'>
-							<CarouselDots />
-							<div class='flex justify-center items-center gap-2 ml-auto'>
-								<CarouselPrevious />
-								<CarouselNext />
-							</div>
-						</div>
-					</Carousel>
-				</div>
+				<AlbumRail
+					items={items}
+					onSelect={(_, index) =>
+						navigate({ to: '/projects/$id', params: { id: projects[index].id } })
+					}
+				/>
 			</div>
 			<ScrollHint label='Other Work' onClick={props.onScrollDown} />
 		</section>

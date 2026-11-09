@@ -79,7 +79,10 @@ function createThreeCanvas(container: HTMLElement, options: ThreeCanvasOptions =
 	let frameId = 0;
 
 	function startLoop(callback: (delta: number, elapsed: number) => void) {
-		function tick() {
+		// Unlike the old THREE.Clock, Timer only advances when update() is called each frame.
+		function tick(timestamp: number) {
+			timer.update(timestamp);
+
 			const delta = timer.getDelta();
 			const elapsed = timer.getElapsed();
 
