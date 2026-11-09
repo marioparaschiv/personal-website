@@ -104,7 +104,7 @@ function Home() {
 		const timer = setTimeout(() => {
 			// Skip if the visitor already scrolled or the browser restored a scroll position.
 			if (activeSection() === 0 && containerRef.scrollTop === 0) snapTo(1);
-		}, 1000);
+		}, 2500);
 
 		onCleanup(() => clearTimeout(timer));
 	});
