@@ -151,20 +151,43 @@ function Lightbox(props: LightboxProps) {
 	}
 
 	function navigate(delta: number) {
-		if (animating() || crossFading() || !hasMultiple()) return;
+		const img = innerImgRef;
+
+		if (animating() || crossFading() || !hasMultiple() || !img) return;
 
 		const next = (activeIndex() + delta + props.images.length) % props.images.length;
 
-		setCrossFading(true);
-		setImgOpacity(0);
+		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const shift = reduced ? 0 : 10 * Math.sign(delta);
+		const blur = reduced ? 0 : 12;
+		const still = { opacity: 1, translate: '0 0', filter: 'blur(0px)' };
 
-		setTimeout(() => {
+		setCrossFading(true);
+
+		// One image element: streak it out, swap the source, then streak the next one in from the other side.
+		const out = img.animate(
+			[still, { opacity: 0, translate: `${-shift}% 0`, filter: `blur(${blur}px)` }],
+			{
+				duration: reduced ? 120 : 170,
+				easing: 'cubic-bezier(0.5, 0, 0.75, 0)',
+				fill: 'forwards',
+			},
+		);
+
+		out.onfinish = async () => {
 			setActiveIndex(next);
 			props.onIndexChange?.(next);
-			setImgOpacity(1);
 
-			setTimeout(() => setCrossFading(false), 200);
-		}, 150);
+			await img.decode().catch(() => {});
+
+			const into = img.animate(
+				[{ opacity: 0, translate: `${shift}% 0`, filter: `blur(${blur}px)` }, still],
+				{ duration: reduced ? 200 : 380, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' },
+			);
+
+			out.cancel();
+			into.onfinish = () => setCrossFading(false);
+		};
 	}
 
 	function onKeyDown(e: KeyboardEvent) {
@@ -231,7 +254,7 @@ function Lightbox(props: LightboxProps) {
 										}
 									}}
 									classList={{
-										'relative w-[90vw] aspect-video select-none': true,
+										'relative w-[min(90vw,calc((100dvh-10rem)*16/9))] aspect-video select-none': true,
 										'lightbox-transition': transitioning(),
 									}}
 									style={{
