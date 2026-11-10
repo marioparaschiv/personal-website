@@ -50,6 +50,18 @@ function useScrollSnap({
 		animated.scrollTo(target);
 	}
 
+	// Lands on a section without animating, for restoring where the visitor left off.
+	function jumpTo(index: number) {
+		const container = getContainer();
+		const clamped = Math.max(0, Math.min(maxIndex, index));
+		const target = clamped * (container.clientHeight || window.innerHeight);
+
+		currentSection = clamped;
+		animated.set(target);
+		container.scrollTop = target;
+		processScroll(target, container.clientHeight || window.innerHeight);
+	}
+
 	useScrollInputs(getContainer, {
 		onNext: () => snapTo(currentSection + 1),
 		onPrev: () => snapTo(currentSection - 1),
@@ -105,7 +117,7 @@ function useScrollSnap({
 		clearTimeout(debounceTimer);
 	});
 
-	return { snapTo, activeSection, showLabel };
+	return { snapTo, jumpTo, activeSection, showLabel };
 }
 
 export default useScrollSnap;
