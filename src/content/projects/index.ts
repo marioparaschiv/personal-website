@@ -22,7 +22,6 @@ interface Project {
 	order: number;
 	hueShift: number;
 	type: string;
-	timeFrame: string;
 	badge?: Badge;
 	successor?: string;
 	repository?: string | null;

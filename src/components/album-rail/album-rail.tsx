@@ -1,4 +1,4 @@
-import { createSignal, For, onCleanup, onMount } from 'solid-js';
+import { createEffect, createSignal, For, onCleanup, onMount } from 'solid-js';
 
 import { usePrefersReducedMotion } from '~/components/hooks/use-media-query';
 import { cn } from '~/utils';
@@ -33,6 +33,13 @@ const SHAPE: Omit<RailShape, 'visible'> = {
 
 const WHEEL_STEP = 60;
 
+// Lets the section fade in before the hint plays; the length matches the `hint-intro` animation.
+const INTRO_DELAY_MS = 500;
+const INTRO_MS = 1600;
+
+// Once per visit, so returning from a project doesn't replay it.
+let introPlayed = false;
+
 function AlbumRail(props: AlbumRailProps) {
 	const reducedMotion = usePrefersReducedMotion();
 	const count = () => props.items.length;
@@ -48,6 +55,22 @@ function AlbumRail(props: AlbumRailProps) {
 	const [stage, setStage] = createSignal<StageSize>({ width: 0, height: 0 });
 	const [hoveringRail, setHoveringRail] = createSignal(false);
 	const [onScreen, setOnScreen] = createSignal(false);
+	const [intro, setIntro] = createSignal(false);
+
+	// The first time the rail is seen, the focused cover shows its hint unprompted, then leaves it to hover.
+	createEffect(() => {
+		if (introPlayed || !onScreen()) return;
+
+		introPlayed = true;
+
+		const start = setTimeout(() => setIntro(true), INTRO_DELAY_MS);
+		const end = setTimeout(() => setIntro(false), INTRO_DELAY_MS + INTRO_MS);
+
+		onCleanup(() => {
+			clearTimeout(start);
+			clearTimeout(end);
+		});
+	});
 
 	let rootRef!: HTMLDivElement;
 	let stageRef!: HTMLDivElement;
@@ -222,6 +245,7 @@ function AlbumRail(props: AlbumRailProps) {
 								width={coverWidth()}
 								height={coverHeight()}
 								focused={index() === motion.index()}
+								intro={intro() && index() === motion.index()}
 								onClick={() => select(index())}
 							/>
 						);

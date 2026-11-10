@@ -4,6 +4,7 @@ import { Dialog } from '@kobalte/core/dialog';
 import type { Accessor } from 'solid-js';
 
 import { usePrefersReducedMotion } from '~/components/hooks/use-media-query';
+import placeholder from '~/utils/placeholder';
 
 import createZoom from './lightbox-zoom';
 
@@ -304,6 +305,7 @@ function Lightbox(props: LightboxProps) {
 										src={img().src}
 										alt={img().title}
 										class='absolute w-full h-full object-cover'
+										style={placeholder(img().src)}
 										onError={(e) => {
 											(e.currentTarget as HTMLImageElement).src =
 												'/img/projects/fallback.png';

@@ -1,24 +1,33 @@
-import { useNavigate } from '@tanstack/solid-router';
+import { createSignal } from 'solid-js';
 
 import AlbumRail, { type AlbumRailItem } from '~/components/album-rail/album-rail';
 import { projects } from '~/content/projects';
 
+import ProjectOverlay, { savedProjectId } from './project-overlay';
 import ScrollHint from './scroll-hint';
 
 type ProjectsSectionProps = {
 	contentRef: (el: HTMLDivElement) => void;
 	onScrollDown: () => void;
+	onOverlayChange: (open: boolean) => void;
 };
 
 const items: AlbumRailItem[] = projects.map((project) => ({
 	src: project.thumbnail,
 	alt: project.name,
 	title: project.name,
-	subtitle: `${project.type} · ${project.timeFrame}`,
+	subtitle: project.type,
 }));
 
 function ProjectsSection(props: ProjectsSectionProps) {
-	const navigate = useNavigate();
+	const [openId, setOpenId] = createSignal(savedProjectId());
+
+	if (openId()) props.onOverlayChange(true);
+
+	function open(id: string) {
+		setOpenId(id);
+		props.onOverlayChange(true);
+	}
 
 	return (
 		<section class='relative flex justify-center items-center h-full overflow-hidden shrink-0'>
@@ -38,13 +47,15 @@ function ProjectsSection(props: ProjectsSectionProps) {
 				class='z-10 relative flex flex-col justify-center items-center pt-28 pb-36 w-full h-full'
 				style={{ opacity: 0 }}
 			>
-				<AlbumRail
-					items={items}
-					onSelect={(_, index) =>
-						navigate({ to: '/projects/$id', params: { id: projects[index].id } })
-					}
-				/>
+				<AlbumRail items={items} onSelect={(_, index) => open(projects[index].id)} />
 			</div>
+			<ProjectOverlay
+				projectId={openId()}
+				onSelect={(id) => {
+					setOpenId(id);
+					props.onOverlayChange(id !== null);
+				}}
+			/>
 			<ScrollHint label='Other Work' onClick={props.onScrollDown} />
 		</section>
 	);

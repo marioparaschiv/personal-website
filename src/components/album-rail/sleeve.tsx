@@ -1,3 +1,7 @@
+import { Maximize2 } from 'lucide-solid';
+
+import HoverHint from '~/components/hover-hint';
+import placeholder from '~/utils/placeholder';
 import { cn } from '~/utils';
 
 import { clamp, type SlotLayout } from './layout';
@@ -15,6 +19,7 @@ type SleeveProps = {
 	width: number;
 	height: number;
 	focused: boolean;
+	intro: boolean;
 	onClick: () => void;
 };
 
@@ -55,6 +60,7 @@ function Sleeve(props: SleeveProps) {
 			>
 				<img
 					src={props.item.src}
+					style={placeholder(props.item.src)}
 					alt={props.item.alt}
 					draggable={false}
 					onError={onImageError}
@@ -64,6 +70,8 @@ function Sleeve(props: SleeveProps) {
 					class='absolute inset-0 bg-neutral-950 pointer-events-none'
 					style={{ opacity: shade() }}
 				/>
+
+				<HoverHint icon={Maximize2} label='View project' intro={props.intro} />
 
 				<span
 					class={cn(

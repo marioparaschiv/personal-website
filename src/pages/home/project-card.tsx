@@ -50,13 +50,6 @@ function ProjectCard(props: ArrayToTuple<typeof config.projects>) {
 						<Typography tag='h5' className='font-normal text-foreground/80 text-lg'>
 							{props.type}
 						</Typography>
-						<Typography
-							tag='h6'
-							border={false}
-							className='font-normal text-foreground/70 text-xs'
-						>
-							{props.timeFrame}
-						</Typography>
 					</div>
 					<button
 						type='button'

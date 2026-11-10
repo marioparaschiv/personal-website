@@ -1,5 +1,5 @@
-import { type ComponentType, useCallback, useMemo } from 'react';
 import { ArrowLeft, ArrowRight, ExternalLink, Github } from 'lucide-react';
+import { type ComponentType, useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { MDXComponents } from 'mdx/types';
 import { Helmet } from 'react-helmet';
@@ -119,7 +119,6 @@ function Project() {
 						{project.name}
 					</h1>
 					<p className='mb-1 text-lg text-neutral-400'>{project.type}</p>
-					<p className='mb-3 text-neutral-500 text-sm'>{project.timeFrame}</p>
 
 					{project.badge && (
 						<span

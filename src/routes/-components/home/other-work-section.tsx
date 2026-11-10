@@ -7,6 +7,7 @@ import { site } from '~/content/site';
 import { cn } from '~/utils';
 
 import { visuals } from './other-work-visuals';
+import PrivateNotice from './private-notice';
 import ScrollHint from './scroll-hint';
 
 type OtherWorkSectionProps = {
@@ -18,11 +19,15 @@ type OtherWorkSectionProps = {
 const corner =
 	'absolute w-3 h-3 border-white/0 group-hover:border-white/50 transition-[border-color,translate] duration-300';
 
+// The notice's `notice-pop` exit animation.
+const NOTICE_EXIT_MS = 200;
+
 type TileProps = OtherWork & {
 	index: number;
 	shown: boolean;
 	/** Bumped on every visit to the section; a new value restarts the visual from its first frame. */
 	run: number;
+	onPrivateClick: () => void;
 };
 
 function Tile(props: TileProps) {
@@ -31,12 +36,14 @@ function Tile(props: TileProps) {
 
 	return (
 		<Dynamic
-			component={props.url ? 'a' : 'div'}
+			component={props.url ? 'a' : 'button'}
 			href={props.url}
 			target={props.url && '_blank'}
 			rel={props.url && 'noopener noreferrer'}
+			type={props.url ? undefined : 'button'}
+			onClick={props.url ? undefined : props.onPrivateClick}
 			class={cn(
-				'group relative flex flex-col gap-1 bg-neutral-950/60 backdrop-blur-sm p-3.5 sm:p-4 border border-white/10 hover:border-white/30 focus-visible:border-white/60 focus-visible:outline-hidden min-h-0 overflow-hidden transition-colors duration-300',
+				'group relative flex flex-col gap-1 bg-neutral-950/60 text-left cursor-pointer backdrop-blur-sm p-3.5 sm:p-4 border border-white/10 hover:border-white/30 focus-visible:border-white/60 focus-visible:outline-hidden min-h-0 overflow-hidden transition-colors duration-300',
 				props.span,
 				props.shown ? 'stagger' : 'opacity-0',
 			)}
@@ -142,6 +149,21 @@ function Tile(props: TileProps) {
 function OtherWorkSection(props: OtherWorkSectionProps) {
 	const [shown, setShown] = createSignal(false);
 	const [run, setRun] = createSignal(0);
+	const [privateName, setPrivateName] = createSignal<string | null>(null);
+
+	let closedAt = 0;
+
+	// One notice at a time, and none while the last one is still animating out.
+	function showPrivate(name: string) {
+		if (privateName() !== null || performance.now() - closedAt < NOTICE_EXIT_MS) return;
+
+		setPrivateName(name);
+	}
+
+	function closePrivate() {
+		closedAt = performance.now();
+		setPrivateName(null);
+	}
 
 	// Tiles cascade in the first time the section is reached, not on every revisit.
 	// Visuals restart on every visit so nobody arrives mid-animation.
@@ -189,12 +211,19 @@ function OtherWorkSection(props: OtherWorkSectionProps) {
 				<div class='gap-2 sm:gap-3 grid grid-cols-2 sm:grid-cols-4'>
 					<For each={otherWork}>
 						{(item, index) => (
-							<Tile {...item} index={index()} shown={shown()} run={run()} />
+							<Tile
+								{...item}
+								index={index()}
+								shown={shown()}
+								run={run()}
+								onPrivateClick={() => showPrivate(item.name)}
+							/>
 						)}
 					</For>
 				</div>
 			</div>
 			<ScrollHint label='Back to top' direction='up' onClick={props.onScrollTop} />
+			<PrivateNotice name={privateName()} onClose={closePrivate} />
 		</section>
 	);
 }

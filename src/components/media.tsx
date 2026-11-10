@@ -1,7 +1,9 @@
 import { For, Show, createEffect, createSignal, on } from 'solid-js';
 import { ArrowLeft, ArrowRight, Maximize2 } from 'lucide-solid';
 
+import HoverHint from '~/components/hover-hint';
 import Lightbox from '~/components/lightbox';
+import placeholder from '~/utils/placeholder';
 import { cn } from '~/utils';
 
 type Image = {
@@ -23,6 +25,21 @@ function onImageError(event: Event) {
 	const img = event.currentTarget as HTMLImageElement;
 
 	if (!img.src.endsWith(FALLBACK)) img.src = FALLBACK;
+}
+
+// Strip thumbnails are small `.thumb.webp` copies, so a 176px tile doesn't decode and upload a
+// full 2880px screenshot. Images without one fall back to the original.
+const THUMB = /\.\w+$/;
+
+function thumbOf(src: string) {
+	return src.replace(THUMB, '.thumb.webp');
+}
+
+function onThumbError(event: Event, src: string) {
+	const img = event.currentTarget as HTMLImageElement;
+
+	if (img.src.endsWith('.thumb.webp')) img.src = src;
+	else onImageError(event);
 }
 
 function pad(value: number) {
@@ -72,10 +89,24 @@ function Media(props: MediaProps) {
 	const count = () => props.images.length;
 	const current = () => props.images[selected()];
 
+	// Every slide sits in the visible frame, so lazy loading would still fetch and decode them all
+	// at once (21 full-size screenshots on Telecord, which stalled the page as it mounted). Only the
+	// current slide and its neighbours get a source; more join as the visitor browses.
+	const [loaded, setLoaded] = createSignal(around(0));
+
+	function around(index: number, kept: ReadonlySet<number> = new Set()) {
+		const total = props.images.length;
+
+		return new Set([...kept, index, (index + 1) % total, (index - 1 + total) % total]);
+	}
+
 	createEffect(
 		on(
 			() => props.images,
-			() => setSelected(0),
+			() => {
+				setSelected(0);
+				setLoaded(around(0));
+			},
 			{ defer: true },
 		),
 	);
@@ -86,6 +117,7 @@ function Media(props: MediaProps) {
 
 		if (next === previous) return;
 
+		setLoaded((kept) => around(next, kept));
 		swoosh(slides[next], slides[previous], direction || 1);
 		setSelected(next);
 		stripRef?.children[next]?.scrollIntoView({
@@ -114,10 +146,10 @@ function Media(props: MediaProps) {
 						{(image, index) => (
 							<img
 								ref={(el) => (slides[index()] = el)}
-								loading={index() === 0 ? 'eager' : 'lazy'}
 								decoding='async'
 								alt={image.title}
-								src={image.src}
+								src={loaded().has(index()) ? image.src : undefined}
+								style={placeholder(image.src)}
 								onError={onImageError}
 								draggable={false}
 								class={cn(
@@ -128,10 +160,7 @@ function Media(props: MediaProps) {
 						)}
 					</For>
 
-					<span class='right-4 bottom-4 absolute flex items-center gap-2 bg-black/60 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 backdrop-blur-sm px-3 py-1.5 font-light text-white text-xs uppercase tracking-widest transition-[opacity,translate] translate-y-1 group-hover:translate-y-0 duration-300'>
-						<Maximize2 size={12} />
-						Expand
-					</span>
+					<HoverHint icon={Maximize2} label='Expand' />
 
 					<span class='top-2 left-2 absolute border-white/0 group-hover:border-white/50 border-t-2 border-l-2 w-5 h-5 transition-[border-color,translate] translate-x-1 translate-y-1 group-hover:translate-x-0 group-hover:translate-y-0 duration-300' />
 					<span class='top-2 right-2 absolute border-white/0 group-hover:border-white/50 border-t-2 border-r-2 w-5 h-5 transition-[border-color,translate] -translate-x-1 translate-y-1 group-hover:translate-x-0 group-hover:translate-y-0 duration-300' />
@@ -198,8 +227,9 @@ function Media(props: MediaProps) {
 										loading='lazy'
 										decoding='async'
 										alt=''
-										src={image.src}
-										onError={onImageError}
+										src={thumbOf(image.src)}
+										style={placeholder(image.src)}
+										onError={(event) => onThumbError(event, image.src)}
 										draggable={false}
 										class='absolute inset-0 w-full h-full object-cover'
 									/>

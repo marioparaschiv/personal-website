@@ -44,8 +44,9 @@ function IngestWires() {
 			<div class='absolute left-1/2 size-0' style={{ top: `${ICON_CENTER_Y}px` }}>
 				<div class='absolute bg-[radial-gradient(closest-side,rgba(255,255,255,0.08),transparent)] -m-40 size-80' />
 
+				{/* Its own layer, so the per-frame dash repaints don't spill into the chips or the page. */}
 				<svg
-					class='absolute overflow-visible'
+					class='absolute overflow-visible will-change-transform'
 					style={{ left: '-600px', top: '-200px' }}
 					width='1200'
 					height='400'
@@ -56,6 +57,11 @@ function IngestWires() {
 						{(source, i) => {
 							const d = wirePath(source);
 							const delay = 300 + i() * 90;
+
+							const pulse = {
+								'animation-delay': `${delay + 900 + i() * 520}ms`,
+								'animation-duration': `${2.2 + (i() % 3) * 0.45}s`,
+							};
 
 							return (
 								<g>
@@ -68,6 +74,19 @@ function IngestWires() {
 										class='motion-safe:animate-[wire-draw_900ms_cubic-bezier(0.23,1,0.32,1)_both]'
 										style={{ 'animation-delay': `${delay}ms` }}
 									/>
+									{/* A wide faint stroke under the pulse is its glow; a drop-shadow filter
+									    re-rasterised every frame and dropped frames while it moved. */}
+									<path
+										d={d}
+										pathLength={100}
+										stroke='rgba(255,255,255,0.2)'
+										stroke-width='5'
+										stroke-linecap='round'
+										stroke-dasharray='14 200'
+										stroke-dashoffset='14'
+										class='motion-safe:animate-[wire-pulse_2.4s_cubic-bezier(0.55,0,0.45,1)_infinite]'
+										style={pulse}
+									/>
 									<path
 										d={d}
 										pathLength={100}
@@ -76,11 +95,8 @@ function IngestWires() {
 										stroke-linecap='round'
 										stroke-dasharray='14 200'
 										stroke-dashoffset='14'
-										class='drop-shadow-[0_0_4px_rgba(255,255,255,0.8)] motion-safe:animate-[wire-pulse_2.4s_cubic-bezier(0.55,0,0.45,1)_infinite]'
-										style={{
-											'animation-delay': `${delay + 900 + i() * 520}ms`,
-											'animation-duration': `${2.2 + (i() % 3) * 0.45}s`,
-										}}
+										class='motion-safe:animate-[wire-pulse_2.4s_cubic-bezier(0.55,0,0.45,1)_infinite]'
+										style={pulse}
 									/>
 									<circle
 										cx={Math.sign(source.x) * PORT_X}
@@ -94,6 +110,7 @@ function IngestWires() {
 					</For>
 				</svg>
 
+				{/* No backdrop blur: the veil behind redraws every frame, so each chip re-blurred it every frame. */}
 				<For each={SOURCES}>
 					{(source, i) => (
 						<div
@@ -104,7 +121,7 @@ function IngestWires() {
 							style={{ left: `${source.x}px`, top: `${source.y}px` }}
 						>
 							<div
-								class='flex items-center gap-1.5 bg-neutral-950/80 backdrop-blur-sm px-3 py-1 border border-white/10 rounded-full text-neutral-300 text-xs stagger'
+								class='flex items-center gap-1.5 bg-neutral-950/90 px-3 py-1 border border-white/10 rounded-full text-neutral-300 text-xs stagger'
 								style={{ '--stagger': String(2 + i()) }}
 							>
 								<source.icon size={12} class='text-neutral-400' />
