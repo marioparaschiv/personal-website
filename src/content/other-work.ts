@@ -36,8 +36,9 @@ const otherWork: OtherWork[] = [
 	},
 	{
 		name: 'trove',
-		description: 'On-device semantic search, using open-source models.',
+		description: 'Local semantic search for your notes, on-device with llama.cpp and EmbeddingGemma.',
 		language: 'Rust',
+		url: github('trove'),
 		icon: Library,
 		span: 'sm:col-span-2',
 	},
