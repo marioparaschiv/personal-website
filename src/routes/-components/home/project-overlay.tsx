@@ -62,8 +62,10 @@ function ProjectOverlay(props: ProjectOverlayProps) {
 					return;
 				}
 
-				// Switching projects stays full height; only a fresh open starts as a sheet.
-				const top = previousId ? (gapRef?.offsetHeight ?? 0) : 0;
+				// Switching projects keeps the sheet's height, but starts the new project at its top.
+				const top = previousId
+					? Math.min(scrollRef?.scrollTop ?? 0, gapRef?.offsetHeight ?? 0)
+					: 0;
 
 				scrollRef?.scrollTo({ top });
 				saved = { id: project.id, scrollTop: top };
