@@ -21,7 +21,8 @@ type SleeveProps = {
 	focused: boolean;
 	/** Whether hovering may show the hint; keyboard focus always can. */
 	hint: boolean;
-	intro: boolean;
+	/** When the intro hint started, in `performance.now()` time; set while this cover plays it. */
+	introStart?: number;
 	onClick: () => void;
 };
 
@@ -77,7 +78,10 @@ function Sleeve(props: SleeveProps) {
 				<HoverHint
 					icon={Maximize2}
 					label='View project'
-					intro={props.intro}
+					intro={props.introStart !== undefined}
+					introElapsed={
+						props.introStart === undefined ? 0 : performance.now() - props.introStart
+					}
 					hover={props.hint}
 				/>
 

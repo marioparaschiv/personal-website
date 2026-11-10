@@ -73,7 +73,7 @@ function AlbumRail(props: AlbumRailProps) {
 	const [stage, setStage] = createSignal<StageSize>({ width: 0, height: 0 });
 	const [hoveringRail, setHoveringRail] = createSignal(false);
 	const [onScreen, setOnScreen] = createSignal(false);
-	const [intro, setIntro] = createSignal(false);
+	const [introStart, setIntroStart] = createSignal<number>();
 	const [pointerHint, setPointerHint] = createSignal(false);
 
 	// The hover hint waits for a real mouse move. Otherwise a cover that slides or snaps under a
@@ -88,14 +88,15 @@ function AlbumRail(props: AlbumRailProps) {
 		if (event.pointerType === 'mouse' && !motion.dragging()) setPointerHint(true);
 	}
 
-	// The first time the rail is seen, the focused cover shows its hint unprompted, then leaves it to hover.
+	// The first time the rail is seen, the focused cover shows its hint unprompted, then leaves it to
+	// hover. It runs on one clock, so changing slides mid-intro carries it over rather than replaying it.
 	createEffect(() => {
 		if (introPlayed || !onScreen()) return;
 
 		introPlayed = true;
 
-		const start = setTimeout(() => setIntro(true), INTRO_DELAY_MS);
-		const end = setTimeout(() => setIntro(false), INTRO_DELAY_MS + INTRO_MS);
+		const start = setTimeout(() => setIntroStart(performance.now()), INTRO_DELAY_MS);
+		const end = setTimeout(() => setIntroStart(undefined), INTRO_DELAY_MS + INTRO_MS);
 
 		onCleanup(() => {
 			clearTimeout(start);
@@ -302,7 +303,7 @@ function AlbumRail(props: AlbumRailProps) {
 								height={coverHeight()}
 								focused={index() === motion.index()}
 								hint={pointerHint()}
-								intro={intro() && index() === motion.index()}
+								introStart={index() === motion.index() ? introStart() : undefined}
 								onClick={() => select(index())}
 							/>
 						);
