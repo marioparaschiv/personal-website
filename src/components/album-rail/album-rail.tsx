@@ -23,7 +23,8 @@ type StageSize = {
 };
 
 const SHAPE: Omit<RailShape, 'visible'> = {
-	spread: 0.58,
+	// Neighbours sit mostly behind the focused cover, peeking out just enough to hint at more.
+	spread: 0.28,
 	stack: 0.5,
 	fan: 6,
 	turn: 22,
@@ -32,6 +33,10 @@ const SHAPE: Omit<RailShape, 'visible'> = {
 };
 
 const WHEEL_STEP = 60;
+
+// Drag distance per item as a share of the cover width, kept apart from `spread` so a tighter
+// stack doesn't make dragging twitchy.
+const DRAG_UNIT = 0.6;
 
 // Lets the section fade in before the hint plays; the length matches the `hint-intro` animation.
 const INTRO_DELAY_MS = 500;
@@ -122,10 +127,10 @@ function AlbumRail(props: AlbumRailProps) {
 
 	const shape = (): RailShape => ({
 		...SHAPE,
-		visible: Math.max(1, Math.min(3, Math.floor((count() - 1) / 2))),
+		visible: 1,
 	});
 
-	const coverWidth = () => Math.min(stage().width * 0.58, stage().height * 0.88 * aspect(), 1280);
+	const coverWidth = () => Math.min(stage().width * 0.8, stage().height * 0.92 * aspect(), 1280);
 
 	const coverHeight = () => coverWidth() / aspect();
 
@@ -245,7 +250,7 @@ function AlbumRail(props: AlbumRailProps) {
 					motion.dragging() ? 'cursor-grabbing' : 'cursor-grab',
 				)}
 				style={{ perspective: '1600px' }}
-				onPointerDown={(event) => startDrag(event, coverWidth() * SHAPE.spread)}
+				onPointerDown={(event) => startDrag(event, coverWidth() * DRAG_UNIT)}
 				onPointerMove={onStagePointerMove}
 			>
 				<For each={props.items}>
