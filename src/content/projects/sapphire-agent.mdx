@@ -1,0 +1,56 @@
+---
+name: Sapphire Agent
+id: sapphire-agent
+order: 3
+hueShift: 30
+type: Developer Tool
+timeFrame: 'Oct 2026 - Present'
+badge:
+    styles: bg-blue-500/15 border-blue-400/40 text-blue-200
+    text: Open Source
+repository: https://github.com/marioparaschiv/sapphire-agent
+icon:
+    path: /img/projects/sapphire-agent/icon.png
+    styles: ''
+thumbnail: /img/projects/sapphire-agent/cover.webp
+images:
+    - src: /img/projects/sapphire-agent/cover.webp
+      title: From epic to pull request
+      subtitle: An epic leaves Ready For Agent, an agent works through its sub-issues, and the bot answers review comments on the PR.
+---
+
+**Move a Linear epic to Ready For Agent and you get a reviewed pull request back.** Sapphire Agent hands the work to a coding agent, keeps an eye on it and cleans up afterwards. It runs as a service on my machine and watches my Linear teams.
+
+## What happens to an epic
+
+1. It gets a fresh git worktree and a T3 Code thread.
+2. Whichever agent T3 is set to use works through the sub-issues.
+3. The agent opens a PR, reviews its own diff and pushes fixes.
+4. The service posts the result on the epic and moves it to To Review.
+5. Once the PR merges, the worktree, branch and thread are deleted.
+
+## Reviewing
+
+**Review happens on GitHub like any other PR.** Mention the bot in a comment in plain words. It replies, starts a follow-up run on the same branch and resolves each thread it fixed. The same mention can also pause everything, stop a run or dispatch another epic.
+
+## When a run goes wrong
+
+- A run that goes quiet gets a nudge. If nothing happens after that, it's flagged on the epic.
+- A run past its time limit is flagged once and keeps going.
+- Before an agent's context fills up, it writes a handoff doc and a fresh agent picks up from there.
+- If I edit an epic mid-run, the agent gets one condensed message instead of a stream of interruptions.
+- Hooks keep each agent inside its own worktree.
+
+Problems with an epic get posted on the epic. Problems with the service itself go to my phone over Pushover.
+
+## How it works
+
+**The whole service is one level-triggered reconciler**, built on Effect. On each tick it reads Linear, git, GitHub and the open T3 threads, compares that with a small SQLite journal, and does at most one piece of work per epic. Webhooks and agent hooks just make the next tick come sooner.
+
+Every decision is based on what's true right now, and every write is idempotent. A crash, a restart or a missed webhook can't leave an epic stuck halfway.
+
+The tests run against fakes of Linear, GitHub and T3, so I can change the rules without touching anything live.
+
+## My part
+
+I designed and built it. It runs the work on Unbound, Telecord, Hivemind and on Sapphire Agent itself.

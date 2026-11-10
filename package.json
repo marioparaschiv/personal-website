@@ -18,6 +18,7 @@
 	},
 	"dependencies": {
 		"@kobalte/core": "^0.13.11",
+		"@solid-primitives/spring": "^0.1.2",
 		"@solidjs/meta": "^0.29.4",
 		"@tailwindcss/vite": "^4.3.0",
 		"@tanstack/solid-router": "^1.170.8",

@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate, useParams } from '@tanstack/solid-router';
 import { ArrowLeft, ArrowRight, ExternalLink } from 'lucide-solid';
-import { Title } from '@solidjs/meta';
-import { Show } from 'solid-js';
+import { createEffect, onCleanup, Show } from 'solid-js';
 
 import { useDarkVeil } from '~/components/effects/dark-veil';
 import { projects, getContent } from '~/content/projects';
@@ -28,12 +27,22 @@ function Project() {
 
 	useDarkVeil(() => project()?.hueShift ?? null);
 
+	// Not @solidjs/meta's Title: disposing it inside the router's view transition made Solid throw,
+	// so the next route never rendered and Back did nothing. Its tag also lost to index.html's
+	// <title>, so the tab never showed the project name anyway.
+	createEffect(() => {
+		document.title = `${project()?.name ?? 'Not Found'} - ${site.name}`;
+	});
+
+	onCleanup(() => {
+		document.title = site.name;
+	});
+
 	return (
 		<Show
 			when={project()}
 			fallback={
 				<div class='flex flex-col justify-center items-center h-dvh'>
-					<Title>Not Found - {site.name}</Title>
 					<p class='mb-6 text-neutral-400 text-lg'>Project not found.</p>
 					<button
 						type='button'
@@ -50,10 +59,6 @@ function Project() {
 			{(p) => {
 				return (
 					<div class='relative min-h-dvh'>
-						<Title>
-							{p().name} - {site.name}
-						</Title>
-
 						<Show when={p().id === 'telecord'}>
 							<IngestWires />
 						</Show>
@@ -103,11 +108,12 @@ function Project() {
 
 						<div class='relative z-10 mx-auto px-6 pt-28 pb-20 max-w-225'>
 							<header class='flex flex-col items-center mb-12 text-center'>
-								<img
-									src={p().icon.path}
-									alt={p().name}
-									class={`mb-5 rounded-lg h-16 drop-shadow-xl stagger ${p().icon.styles}`}
-								/>
+								{/* The inset ring darkens the icon's own edge, so icons ship clean and share one rim. */}
+								<span
+									class={`relative block mb-5 size-16 overflow-hidden drop-shadow-xl stagger after:absolute after:inset-0 after:rounded-[inherit] after:ring-2 after:ring-inset after:ring-black/35 ${p().icon.styles || 'rounded-[24%]'}`}
+								>
+									<img src={p().icon.path} alt={p().name} class='size-full' />
+								</span>
 								<h1
 									class='mb-1 font-semibold text-4xl text-white tracking-tight stagger'
 									style={{ '--stagger': '1' }}

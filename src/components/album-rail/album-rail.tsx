@@ -105,10 +105,11 @@ function AlbumRail(props: AlbumRailProps) {
 		props.onSelect(props.items[index], index);
 	}
 
-	function onPointerDown(event: PointerEvent) {
+	// `unit` is how many pixels of drag move the rail by one item, so each surface tracks the finger.
+	function startDrag(event: PointerEvent, unit: number) {
 		if (event.button !== 0) return;
 
-		motion.dragStart(event.clientX, coverWidth() * SHAPE.spread);
+		motion.dragStart(event.clientX, unit);
 		window.addEventListener('pointermove', onPointerMove);
 		window.addEventListener('pointerup', onPointerUp);
 		window.addEventListener('pointercancel', onPointerUp);
@@ -208,7 +209,7 @@ function AlbumRail(props: AlbumRailProps) {
 					motion.dragging() ? 'cursor-grabbing' : 'cursor-grab',
 				)}
 				style={{ perspective: '1600px' }}
-				onPointerDown={onPointerDown}
+				onPointerDown={(event) => startDrag(event, coverWidth() * SHAPE.spread)}
 			>
 				<For each={props.items}>
 					{(item, index) => {
@@ -259,10 +260,18 @@ function AlbumRail(props: AlbumRailProps) {
 					position={motion.position()}
 					count={count()}
 					loop
+					dragging={motion.dragging()}
 					selectLabel={`Open ${props.items[motion.index()]?.title}`}
-					onGoTo={motion.goTo}
+					onDragStart={startDrag}
+					onGoTo={(index) => {
+						if (!motion.consumeClick()) motion.goTo(index);
+					}}
 					onStep={motion.step}
-					onSelect={() => props.onSelect(props.items[motion.index()], motion.index())}
+					onSelect={() => {
+						if (motion.consumeClick()) return;
+
+						props.onSelect(props.items[motion.index()], motion.index());
+					}}
 				/>
 			</div>
 		</div>

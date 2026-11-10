@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/solid-router';
-import { For, onCleanup, onMount } from 'solid-js';
+import { createEffect, For, onCleanup, onMount } from 'solid-js';
 import { ArrowRight } from 'lucide-solid';
 import { Title } from '@solidjs/meta';
 
@@ -71,6 +71,9 @@ function HireMe() {
 	);
 }
 
+// Survives the route unmounting, so coming back from a project lands on the section it was opened from.
+let lastSection = 0;
+
 function Home() {
 	let containerRef!: HTMLDivElement;
 	let heroContentRef!: HTMLDivElement;
@@ -94,13 +97,21 @@ function Home() {
 		}
 	}
 
-	const { snapTo, activeSection, showLabel } = useScrollSnap({
+	const { snapTo, jumpTo, activeSection, showLabel } = useScrollSnap({
 		container: () => containerRef,
 		sectionCount: SECTIONS.length,
 		onScrollProgress,
 	});
 
+	const restoreTo = lastSection;
+
+	createEffect(() => {
+		lastSection = activeSection();
+	});
+
 	onMount(() => {
+		if (restoreTo > 0) jumpTo(restoreTo);
+
 		const timer = setTimeout(() => {
 			// Skip if the visitor already scrolled or the browser restored a scroll position.
 			if (activeSection() === 0 && containerRef.scrollTop === 0) snapTo(1);

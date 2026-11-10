@@ -11,6 +11,9 @@ importers:
       '@kobalte/core':
         specifier: ^0.13.11
         version: 0.13.11(solid-js@1.9.13)
+      '@solid-primitives/spring':
+        specifier: ^0.1.2
+        version: 0.1.2(solid-js@1.9.13)
       '@solidjs/meta':
         specifier: ^0.29.4
         version: 0.29.4(solid-js@1.9.13)
@@ -914,6 +917,11 @@ packages:
     peerDependencies:
       solid-js: ^1.6.12
 
+  '@solid-primitives/spring@0.1.2':
+    resolution: {integrity: sha512-t1pI9cIScYBmRFpy50duLVvkTJqulgdxveHNONvzVvwZbjRCEbvHseK6pq6ipzpQxq12nZ2xhK96pDAaoXXg1Q==}
+    peerDependencies:
+      solid-js: ^1.6.12
+
   '@solid-primitives/static-store@0.1.3':
     resolution: {integrity: sha512-uxez7SXnr5GiRnzqO2IEDjOJRIXaG+0LZLBizmUA1FwSi+hrpuMzVBwyk70m4prcl8X6FDDXUl9O8hSq8wHbBQ==}
     peerDependencies:
@@ -1469,6 +1477,7 @@ packages:
   eslint@9.39.2:
     resolution: {integrity: sha512-LEyamqS7W5HB3ujJyvi0HQK/dtVINZvd5mAAp9eT5S/ujByGjiZLCzPcHVzuXbpJDJF/cxwHlfceVUDZ2lnSTw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -3043,6 +3052,10 @@ snapshots:
       solid-js: 1.9.13
 
   '@solid-primitives/scheduled@1.5.3(solid-js@1.9.13)':
+    dependencies:
+      solid-js: 1.9.13
+
+  '@solid-primitives/spring@0.1.2(solid-js@1.9.13)':
     dependencies:
       solid-js: 1.9.13
 

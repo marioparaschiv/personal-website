@@ -9,7 +9,9 @@ type RulerProps = {
 	position: number;
 	count: number;
 	loop: boolean;
+	dragging: boolean;
 	selectLabel: string;
+	onDragStart: (event: PointerEvent, unit: number) => void;
 	onGoTo: (index: number) => void;
 	onStep: (direction: number) => void;
 	onSelect: () => void;
@@ -25,8 +27,11 @@ const SUBDIVISIONS = 4;
 const HALF_SPAN = 2.5;
 const SLOTS = HALF_SPAN * 2 * SUBDIVISIONS + 2;
 
+// The pseudo-element widens the hit area well past the 32px glyph box without moving the layout.
 const arrow =
-	'flex justify-center items-center w-8 h-8 text-neutral-500 hover:text-white focus-visible:text-white focus-visible:outline-hidden transition-colors duration-300 cursor-pointer';
+	'group/arrow relative flex justify-center items-center w-8 h-8 text-neutral-500 hover:text-white focus-visible:text-white focus-visible:outline-hidden transition-colors duration-300 cursor-pointer before:absolute before:-inset-3';
+
+const arrowIcon = 'transition-[translate] duration-300 ease-out group-active/arrow:duration-100';
 
 function Ruler(props: RulerProps) {
 	const ticks = () => {
@@ -55,11 +60,21 @@ function Ruler(props: RulerProps) {
 				class={arrow}
 				onClick={() => props.onStep(-1)}
 			>
-				<ChevronLeft size={16} />
+				<ChevronLeft
+					class={cn(
+						arrowIcon,
+						'group-hover/arrow:-translate-x-0.5 group-active/arrow:-translate-x-1',
+					)}
+					size={16}
+				/>
 			</button>
 
 			<div
-				class='relative h-8 overflow-hidden'
+				class={cn(
+					'relative h-8 overflow-hidden touch-pan-y',
+					props.dragging ? 'cursor-grabbing' : 'cursor-grab',
+				)}
+				onPointerDown={(event) => props.onDragStart(event, ITEM_GAP)}
 				style={{
 					width: `${HALF_SPAN * 2 * ITEM_GAP}px`,
 					'mask-image':
@@ -76,7 +91,7 @@ function Ruler(props: RulerProps) {
 								tabIndex={-1}
 								aria-hidden='true'
 								disabled={!tick().major || !inRange(tick().value)}
-								class='top-0 left-1/2 absolute flex justify-center items-center w-4 h-full -translate-x-1/2 cursor-pointer disabled:cursor-default'
+								class='top-0 left-1/2 absolute flex justify-center items-center w-4 h-full -translate-x-1/2 cursor-pointer disabled:cursor-[inherit]'
 								style={{
 									translate: `${offset() * ITEM_GAP}px 0`,
 									visibility: inRange(tick().value) ? 'visible' : 'hidden',
@@ -115,7 +130,13 @@ function Ruler(props: RulerProps) {
 				class={arrow}
 				onClick={() => props.onStep(1)}
 			>
-				<ChevronRight size={16} />
+				<ChevronRight
+					class={cn(
+						arrowIcon,
+						'group-hover/arrow:translate-x-0.5 group-active/arrow:translate-x-1',
+					)}
+					size={16}
+				/>
 			</button>
 		</div>
 	);
