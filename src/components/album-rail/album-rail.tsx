@@ -36,7 +36,13 @@ const SHAPE: Omit<RailShape, 'visible'> = {
 // enough to hint at more. Phones keep the wider fan, where a tight stack shows slivers of tilt.
 const DESKTOP_SPREAD = 0.28;
 
-const FAN_MIN_WIDTH = 1024;
+// Wide stages leave room beside the height-capped cover, so neighbours spread out into it.
+const DESKTOP_SPREAD_MAX = 0.42;
+
+const PERSPECTIVE = 1600;
+
+// Headroom kept between a tilted neighbour's lifted corner and the focused cover's edge.
+const FAN_MARGIN = 0.8;
 
 const WHEEL_STEP = 60;
 
@@ -134,10 +140,14 @@ function AlbumRail(props: AlbumRailProps) {
 
 	const shape = (): RailShape => ({
 		...SHAPE,
-		spread: desktop() ? DESKTOP_SPREAD : SHAPE.spread,
-		// On smaller stages a tilt lifts the neighbours' inner corners past the focused cover's
-		// edges, showing as triangles above and below it, so those stay flat.
-		fan: stage().width >= FAN_MIN_WIDTH ? SHAPE.fan : 0,
+		spread: desktop()
+			? clamp(
+					(DESKTOP_SPREAD * stage().width) / coverWidth() / 1.25,
+					DESKTOP_SPREAD,
+					DESKTOP_SPREAD_MAX,
+				)
+			: SHAPE.spread,
+		fan: desktop() ? Math.min(SHAPE.fan, fanRoom()) : 0,
 		visible: desktop() ? 1 : Math.max(1, Math.min(3, Math.floor((count() - 1) / 2))),
 	});
 
@@ -147,6 +157,19 @@ function AlbumRail(props: AlbumRailProps) {
 			: Math.min(stage().width * 0.8, stage().height * 0.88 * aspect(), 1280);
 
 	const coverHeight = () => coverWidth() / aspect();
+
+	// The largest tilt, in degrees, that keeps a neighbour's inner corners hidden behind the
+	// focused cover. A neighbour sits deeper and so renders shorter; tilting it lifts its inner
+	// corners by half its width times sin(fan), and past that height gap they poke out as
+	// triangles. Big covers sit deeper in perspective, so they get room for more tilt.
+	function fanRoom() {
+		const innerDepth =
+			coverWidth() * (SHAPE.depth - 0.5 * Math.sin((SHAPE.turn * Math.PI) / 180));
+		const scale = PERSPECTIVE / (PERSPECTIVE + innerDepth);
+		const lift = clamp(((1 - scale) / aspect()) * FAN_MARGIN, 0, 1);
+
+		return (Math.asin(lift) * 180) / Math.PI;
+	}
 
 	function select(index: number) {
 		if (motion.consumeClick()) return;
@@ -263,7 +286,7 @@ function AlbumRail(props: AlbumRailProps) {
 					'relative w-full min-h-0 grow touch-pan-y',
 					motion.dragging() ? 'cursor-grabbing' : 'cursor-grab',
 				)}
-				style={{ perspective: '1600px' }}
+				style={{ perspective: `${PERSPECTIVE}px` }}
 				onPointerDown={(event) => startDrag(event, coverWidth() * DRAG_UNIT)}
 				onPointerMove={onStagePointerMove}
 			>
