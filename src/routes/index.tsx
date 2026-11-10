@@ -1,10 +1,9 @@
-import { createFileRoute, Link } from '@tanstack/solid-router';
-import { createEffect, For, onCleanup, onMount } from 'solid-js';
-import { ArrowRight } from 'lucide-solid';
+import { createEffect, createSignal, For, onCleanup, onMount } from 'solid-js';
+import { createFileRoute } from '@tanstack/solid-router';
 import { Title } from '@solidjs/meta';
 
 import useScrollSnap from '~/components/hooks/use-scroll-snap';
-import { prefetchSlots } from '~/components/booking/defaults';
+import HireMe from '~/components/hire-me';
 import { site } from '~/content/site';
 import { cn } from '~/utils';
 
@@ -14,63 +13,6 @@ import HeroSection from './-components/home/hero-section';
 
 const SECTIONS = ['Intro', 'Featured Work', 'Other Work'] as const;
 
-const corner =
-	'absolute w-2 h-2 border-white/0 group-hover:border-white/60 group-focus-visible:border-white/60 transition-[border-color,translate] duration-300';
-
-function HireMe() {
-	return (
-		<div class='top-6 right-6 z-30 fixed flex items-center gap-4'>
-			<Link
-				to='/contact'
-				preload='intent'
-				onPointerEnter={prefetchSlots}
-				onFocus={prefetchSlots}
-				onTouchStart={prefetchSlots}
-				class='group relative flex items-stretch focus-visible:outline-hidden font-medium text-black text-sm uppercase tracking-widest'
-			>
-				<span
-					class={cn(
-						corner,
-						'-top-1.5 -left-1.5 border-t border-l translate-x-1 translate-y-1 group-hover:translate-x-0 group-hover:translate-y-0',
-					)}
-				/>
-				<span
-					class={cn(
-						corner,
-						'-top-1.5 -right-1.5 border-t border-r -translate-x-1 translate-y-1 group-hover:translate-x-0 group-hover:translate-y-0',
-					)}
-				/>
-				<span
-					class={cn(
-						corner,
-						'-bottom-1.5 -left-1.5 border-b border-l translate-x-1 -translate-y-1 group-hover:translate-x-0 group-hover:translate-y-0',
-					)}
-				/>
-				<span
-					class={cn(
-						corner,
-						'-right-1.5 -bottom-1.5 border-r border-b -translate-x-1 -translate-y-1 group-hover:translate-x-0 group-hover:translate-y-0',
-					)}
-				/>
-
-				<span class='bg-white group-hover:bg-neutral-100 px-4 py-2 transition-colors duration-300'>
-					Hire me
-				</span>
-				<span class='relative flex justify-center items-center bg-white group-hover:bg-neutral-200 border-black/10 border-l w-9 overflow-hidden transition-colors duration-300'>
-					<ArrowRight
-						class='transition-transform group-hover:translate-x-6 duration-300 ease-out'
-						size={14}
-					/>
-					<ArrowRight
-						class='absolute transition-transform -translate-x-6 group-hover:translate-x-0 duration-300 ease-out'
-						size={14}
-					/>
-				</span>
-			</Link>
-		</div>
-	);
-}
-
 // Survives the route unmounting, so coming back from a project lands on the section it was opened from.
 let lastSection = 0;
 
@@ -79,6 +21,8 @@ function Home() {
 	let heroContentRef!: HTMLDivElement;
 	let projectsContentRef!: HTMLDivElement;
 	let otherContentRef!: HTMLDivElement;
+
+	const [overlayOpen, setOverlayOpen] = createSignal(false);
 
 	function onScrollProgress(ratio: number) {
 		if (heroContentRef) {
@@ -127,7 +71,13 @@ function Home() {
 		>
 			<Title>{site.name}</Title>
 
-			<HireMe />
+			{/* Swishes out while the project sheet is open; the sheet's copy swishes in after it. */}
+			<div
+				class='top-6 right-6 z-30 fixed swish-toggle'
+				data-away={overlayOpen() || undefined}
+			>
+				<HireMe />
+			</div>
 
 			<div class='group/nav top-6 left-6 z-30 fixed flex flex-col items-start gap-3 p-3'>
 				<div class='left-0 absolute inset-0 opacity-0 group-hover/nav:opacity-100 backdrop-blur-xs border border-white/10 w-8 group-hover/nav:w-full transition-all duration-300 pointer-events-none' />
@@ -172,6 +122,7 @@ function Home() {
 			<ProjectsSection
 				contentRef={(el: HTMLDivElement) => (projectsContentRef = el)}
 				onScrollDown={() => snapTo(2)}
+				onOverlayChange={setOverlayOpen}
 			/>
 			<OtherWorkSection
 				contentRef={(el: HTMLDivElement) => (otherContentRef = el)}

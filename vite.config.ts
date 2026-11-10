@@ -8,6 +8,8 @@ import solid from 'vite-plugin-solid';
 import mdx from '@mdx-js/rollup';
 import path from 'node:path';
 
+import thumbhash from './vite/thumbhash';
+
 const config: UserConfig = {
 	plugins: [
 		{
@@ -19,6 +21,7 @@ const config: UserConfig = {
 			autoCodeSplitting: true,
 		}),
 		tailwindcss(),
+		thumbhash('img/projects'),
 		compression(),
 		solid({ extensions: ['.mdx'] }),
 	],
