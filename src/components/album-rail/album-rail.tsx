@@ -1,6 +1,7 @@
 import { createEffect, createSignal, For, on, onCleanup, onMount } from 'solid-js';
 
 import { usePrefersReducedMotion } from '~/components/hooks/use-media-query';
+import useBreakpoint from '~/components/hooks/use-breakpoint';
 import { cn } from '~/utils';
 
 import { clamp, type RailShape, slotLayout, slotOffset } from './layout';
@@ -23,14 +24,19 @@ type StageSize = {
 };
 
 const SHAPE: Omit<RailShape, 'visible'> = {
-	// Neighbours sit mostly behind the focused cover, peeking out just enough to hint at more.
-	spread: 0.28,
+	spread: 0.58,
 	stack: 0.5,
 	fan: 6,
 	turn: 22,
 	depth: 0.5,
 	dim: 0.45,
 };
+
+// On desktop the covers grow and neighbours sit mostly behind the focused one, peeking out just
+// enough to hint at more. Phones keep the wider fan, where a tight stack shows slivers of tilt.
+const DESKTOP_SPREAD = 0.28;
+
+const FAN_MIN_WIDTH = 1024;
 
 const WHEEL_STEP = 60;
 
@@ -47,6 +53,7 @@ let introPlayed = false;
 
 function AlbumRail(props: AlbumRailProps) {
 	const reducedMotion = usePrefersReducedMotion();
+	const desktop = useBreakpoint('md');
 	const count = () => props.items.length;
 	const aspect = () => props.aspect ?? 16 / 9;
 
@@ -127,10 +134,17 @@ function AlbumRail(props: AlbumRailProps) {
 
 	const shape = (): RailShape => ({
 		...SHAPE,
-		visible: 1,
+		spread: desktop() ? DESKTOP_SPREAD : SHAPE.spread,
+		// On smaller stages a tilt lifts the neighbours' inner corners past the focused cover's
+		// edges, showing as triangles above and below it, so those stay flat.
+		fan: stage().width >= FAN_MIN_WIDTH ? SHAPE.fan : 0,
+		visible: desktop() ? 1 : Math.max(1, Math.min(3, Math.floor((count() - 1) / 2))),
 	});
 
-	const coverWidth = () => Math.min(stage().width * 0.8, stage().height * 0.92 * aspect(), 1280);
+	const coverWidth = () =>
+		desktop()
+			? Math.min(stage().width * 0.8, stage().height * 0.92 * aspect(), 1280)
+			: Math.min(stage().width * 0.8, stage().height * 0.88 * aspect(), 1280);
 
 	const coverHeight = () => coverWidth() / aspect();
 
