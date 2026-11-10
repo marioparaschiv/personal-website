@@ -2,19 +2,27 @@ import { type Component, Show } from 'solid-js';
 
 import { cn } from '~/utils';
 
+// Matches the delay in the `hint-ping` utility; the inline delay replaces it.
+const PING_DELAY_MS = 250;
+
 type HoverHintProps = {
 	icon: Component<{ size?: number; class?: string }>;
 	label: string;
 	/** Plays the hint once on its own, pulsing, to show the target is clickable. */
 	intro?: boolean;
+	/** Milliseconds of the intro already played elsewhere, so it resumes instead of restarting. */
+	introElapsed?: number;
 	/** Set false to show the hint on keyboard focus only. Defaults to true. */
 	hover?: boolean;
 };
 
 /** Centered hint that blurs in when its `group` parent is hovered or focused. */
 function HoverHint(props: HoverHintProps) {
+	const elapsed = () => props.introElapsed ?? 0;
+
 	return (
 		<span
+			style={props.intro ? { 'animation-delay': `${-elapsed()}ms` } : undefined}
 			class={cn(
 				'absolute inset-0 flex flex-col justify-center items-center gap-2.5 opacity-0 group-focus-visible:opacity-100 blur-[6px] group-focus-visible:blur-none scale-75 group-focus-visible:scale-100 transition-[opacity,scale,filter] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] pointer-events-none',
 				props.hover !== false &&
@@ -24,7 +32,10 @@ function HoverHint(props: HoverHintProps) {
 		>
 			<span class='relative flex justify-center items-center bg-black/70 backdrop-blur-md border border-white/30 size-11 text-white'>
 				<Show when={props.intro}>
-					<span class='absolute inset-0 border border-white/70 hint-ping' />
+					<span
+						class='absolute inset-0 border border-white/70 hint-ping'
+						style={{ 'animation-delay': `${PING_DELAY_MS - elapsed()}ms` }}
+					/>
 				</Show>
 				<props.icon size={16} />
 			</span>
