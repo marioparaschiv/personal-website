@@ -19,6 +19,8 @@ type SleeveProps = {
 	width: number;
 	height: number;
 	focused: boolean;
+	/** Whether hovering may show the hint; keyboard focus always can. */
+	hint: boolean;
 	intro: boolean;
 	onClick: () => void;
 };
@@ -54,7 +56,8 @@ function Sleeve(props: SleeveProps) {
 				aria-label={props.focused ? `Open ${props.item.title}` : `Show ${props.item.title}`}
 				class={cn(
 					'relative bg-neutral-950 shadow-[0_24px_48px_-12px_rgb(0_0_0/0.75)] border border-white/10 focus-visible:border-white/60 focus-visible:outline-hidden w-full h-full overflow-hidden transition-colors duration-300',
-					props.focused ? 'group hover:border-white/30 cursor-pointer' : 'cursor-default',
+					props.focused ? 'group cursor-pointer' : 'cursor-default',
+					props.focused && props.hint && 'hover:border-white/30',
 				)}
 				onClick={() => props.onClick()}
 			>
@@ -71,7 +74,12 @@ function Sleeve(props: SleeveProps) {
 					style={{ opacity: shade() }}
 				/>
 
-				<HoverHint icon={Maximize2} label='View project' intro={props.intro} />
+				<HoverHint
+					icon={Maximize2}
+					label='View project'
+					intro={props.intro}
+					hover={props.hint}
+				/>
 
 				<span
 					class={cn(

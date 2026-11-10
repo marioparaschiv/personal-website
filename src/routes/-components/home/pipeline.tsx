@@ -185,7 +185,11 @@ function Pipeline() {
 
 	return (
 		<div class='flex flex-col self-stretch gap-2 w-full'>
-			<svg class='flex-1 w-full min-h-20' viewBox='0 0 400 140' aria-hidden='true'>
+			<svg
+				class='flex-1 w-full min-h-20 short-phone:max-h-20'
+				viewBox='0 0 400 140'
+				aria-hidden='true'
+			>
 				<For each={LANES}>
 					{(lane) => (
 						<>

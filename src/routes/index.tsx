@@ -127,7 +127,6 @@ function Home() {
 			<OtherWorkSection
 				contentRef={(el: HTMLDivElement) => (otherContentRef = el)}
 				active={activeSection() === 2}
-				onScrollTop={() => snapTo(0)}
 			/>
 		</div>
 	);
