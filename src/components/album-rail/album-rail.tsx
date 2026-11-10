@@ -1,4 +1,4 @@
-import { createEffect, createSignal, For, onCleanup, onMount } from 'solid-js';
+import { createEffect, createSignal, For, on, onCleanup, onMount } from 'solid-js';
 
 import { usePrefersReducedMotion } from '~/components/hooks/use-media-query';
 import { cn } from '~/utils';
@@ -56,6 +56,19 @@ function AlbumRail(props: AlbumRailProps) {
 	const [hoveringRail, setHoveringRail] = createSignal(false);
 	const [onScreen, setOnScreen] = createSignal(false);
 	const [intro, setIntro] = createSignal(false);
+	const [pointerHint, setPointerHint] = createSignal(false);
+
+	// The hover hint waits for a real mouse move. Otherwise a cover that slides or snaps under a
+	// resting cursor, or a touch that leaves sticky hover behind, flashes the hint on every pass.
+	createEffect(on(motion.index, () => setPointerHint(false), { defer: true }));
+
+	createEffect(() => {
+		if (!onScreen()) setPointerHint(false);
+	});
+
+	function onStagePointerMove(event: PointerEvent) {
+		if (event.pointerType === 'mouse' && !motion.dragging()) setPointerHint(true);
+	}
 
 	// The first time the rail is seen, the focused cover shows its hint unprompted, then leaves it to hover.
 	createEffect(() => {
@@ -132,14 +145,14 @@ function AlbumRail(props: AlbumRailProps) {
 	function startDrag(event: PointerEvent, unit: number) {
 		if (event.button !== 0) return;
 
-		motion.dragStart(event.clientX, unit);
+		motion.dragStart(event.clientX, event.clientY, unit);
 		window.addEventListener('pointermove', onPointerMove);
 		window.addEventListener('pointerup', onPointerUp);
 		window.addEventListener('pointercancel', onPointerUp);
 	}
 
 	function onPointerMove(event: PointerEvent) {
-		motion.dragMove(event.clientX);
+		motion.dragMove(event.clientX, event.clientY);
 	}
 
 	function onPointerUp() {
@@ -233,6 +246,7 @@ function AlbumRail(props: AlbumRailProps) {
 				)}
 				style={{ perspective: '1600px' }}
 				onPointerDown={(event) => startDrag(event, coverWidth() * SHAPE.spread)}
+				onPointerMove={onStagePointerMove}
 			>
 				<For each={props.items}>
 					{(item, index) => {
@@ -245,6 +259,7 @@ function AlbumRail(props: AlbumRailProps) {
 								width={coverWidth()}
 								height={coverHeight()}
 								focused={index() === motion.index()}
+								hint={pointerHint()}
 								intro={intro() && index() === motion.index()}
 								onClick={() => select(index())}
 							/>

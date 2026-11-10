@@ -7,6 +7,8 @@ type HoverHintProps = {
 	label: string;
 	/** Plays the hint once on its own, pulsing, to show the target is clickable. */
 	intro?: boolean;
+	/** Set false to show the hint on keyboard focus only. Defaults to true. */
+	hover?: boolean;
 };
 
 /** Centered hint that blurs in when its `group` parent is hovered or focused. */
@@ -14,7 +16,9 @@ function HoverHint(props: HoverHintProps) {
 	return (
 		<span
 			class={cn(
-				'absolute inset-0 flex flex-col justify-center items-center gap-2.5 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 blur-[6px] group-hover:blur-none group-focus-visible:blur-none scale-75 group-hover:scale-100 group-focus-visible:scale-100 transition-[opacity,scale,filter] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] pointer-events-none',
+				'absolute inset-0 flex flex-col justify-center items-center gap-2.5 opacity-0 group-focus-visible:opacity-100 blur-[6px] group-focus-visible:blur-none scale-75 group-focus-visible:scale-100 transition-[opacity,scale,filter] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] pointer-events-none',
+				props.hover !== false &&
+					'group-hover:opacity-100 group-hover:blur-none group-hover:scale-100',
 				props.intro && 'hint-intro',
 			)}
 		>

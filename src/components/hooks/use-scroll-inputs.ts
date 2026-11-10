@@ -1,5 +1,7 @@
 import { onCleanup, onMount } from 'solid-js';
 
+import { swipeAxis, type SwipeAxis } from '~/utils';
+
 interface ScrollInputHandlers {
 	onNext: () => void;
 	onPrev: () => void;
@@ -9,7 +11,9 @@ interface ScrollInputHandlers {
 }
 
 function useScrollInputs(getContainer: () => HTMLElement, handlers: ScrollInputHandlers) {
+	let startX = 0;
 	let startY = 0;
+	let axis: SwipeAxis | null = null;
 	let triggered = false;
 
 	function onWheel(e: WheelEvent) {
@@ -21,15 +25,27 @@ function useScrollInputs(getContainer: () => HTMLElement, handlers: ScrollInputH
 	}
 
 	function onTouchStart(e: TouchEvent) {
+		startX = e.touches[0].clientX;
 		startY = e.touches[0].clientY;
+		axis = null;
 		triggered = false;
 	}
 
 	function onTouchMove(e: TouchEvent) {
-		if (triggered || handlers.isLocked()) return;
+		if (e.touches.length > 1) return;
 
+		// Sections only move by snapping. Letting the browser pan too would fight the snap animation
+		// and carry momentum past the next section, so native touch scrolling is cancelled outright.
+		if (e.cancelable) e.preventDefault();
+
+		if (triggered || axis === 'x') return;
+
+		const deltaX = e.touches[0].clientX - startX;
 		const deltaY = startY - e.touches[0].clientY;
-		if (Math.abs(deltaY) < 5) return;
+
+		axis ??= swipeAxis(deltaX, deltaY);
+
+		if (axis !== 'y' || handlers.isLocked()) return;
 
 		triggered = true;
 		if (deltaY > 0) handlers.onNext();
@@ -65,7 +81,7 @@ function useScrollInputs(getContainer: () => HTMLElement, handlers: ScrollInputH
 		const container = getContainer();
 		container.addEventListener('wheel', onWheel, { passive: false });
 		container.addEventListener('touchstart', onTouchStart, { passive: true });
-		container.addEventListener('touchmove', onTouchMove, { passive: true });
+		container.addEventListener('touchmove', onTouchMove, { passive: false });
 		document.addEventListener('keydown', onKeyDown);
 	});
 

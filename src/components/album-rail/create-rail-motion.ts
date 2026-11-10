@@ -1,5 +1,7 @@
 import { createMemo, createSignal, onCleanup } from 'solid-js';
 
+import { swipeAxis } from '~/utils';
+
 import { clamp, slotOffset } from './layout';
 
 type RailMotionOptions = {
@@ -11,6 +13,7 @@ type RailMotionOptions = {
 
 type DragState = {
 	startX: number;
+	startY: number;
 	startPosition: number;
 	unit: number;
 	lastX: number;
@@ -20,7 +23,6 @@ type DragState = {
 };
 
 const POSITION_RATE = 9;
-const DRAG_THRESHOLD = 5;
 
 function approach(current: number, target: number, rate: number, dt: number) {
 	return current + (target - current) * (1 - Math.exp(-rate * dt));
@@ -88,10 +90,11 @@ function createRailMotion(options: RailMotionOptions) {
 		wake();
 	}
 
-	function dragStart(clientX: number, unit: number) {
+	function dragStart(clientX: number, clientY: number, unit: number) {
 		suppressClick = false;
 		drag = {
 			startX: clientX,
+			startY: clientY,
 			startPosition: position(),
 			unit,
 			lastX: clientX,
@@ -101,15 +104,24 @@ function createRailMotion(options: RailMotionOptions) {
 		};
 	}
 
-	function dragMove(clientX: number) {
+	function dragMove(clientX: number, clientY: number) {
 		if (!drag) return;
 
 		const now = performance.now();
 		const delta = clientX - drag.startX;
 
-		if (!drag.moved && Math.abs(delta) < DRAG_THRESHOLD) return;
-
 		if (!drag.moved) {
+			const axis = swipeAxis(delta, drag.startY - clientY);
+
+			if (axis === null) return;
+
+			// A vertical swipe belongs to the page's section snap, so the rail lets the whole gesture go.
+			if (axis === 'y') {
+				drag = undefined;
+
+				return;
+			}
+
 			drag.moved = true;
 			setDragging(true);
 		}

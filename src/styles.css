@@ -4,6 +4,9 @@
 
 @source '../config.json';
 
+/* Phones with browser chrome showing, where a full-height section has little room to spare. */
+@custom-variant short-phone (@media (width < 40rem) and (height < 47.5rem));
+
 @theme inline {
 	--color-border: hsl(var(--border));
 	--color-input: hsl(var(--input));
@@ -410,8 +413,12 @@
 }
 
 @layer base {
+	/* `manipulation` drops iOS double-tap zoom while keeping pans and pinch zoom. Set on every element
+	   because touch-action isn't inherited and scroll containers reset it. */
 	* {
 		@apply border-border;
+
+		touch-action: manipulation;
 	}
 
 	html,

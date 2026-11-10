@@ -9,6 +9,8 @@ type OtherWork = {
 	icon: LucideIcon;
 	stars?: number;
 	span?: string;
+	/** Leads the grid at full width on phones, the only tile that keeps its visual there. */
+	featured?: boolean;
 };
 
 const github = (repo: string) => `https://github.com/marioparaschiv/${repo}`;
@@ -19,7 +21,8 @@ const otherWork: OtherWork[] = [
 		description: 'Real-time market intelligence platform.',
 		language: 'Rust',
 		icon: Brain,
-		span: 'sm:col-span-2 sm:row-span-2',
+		span: 'col-span-2 sm:row-span-2',
+		featured: true,
 	},
 	{
 		name: 'enmity',
