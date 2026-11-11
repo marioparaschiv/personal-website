@@ -26,8 +26,7 @@ const otherWork: OtherWork[] = [
 	},
 	{
 		name: 'enmity',
-		description:
-			"The first mod for Discord's React Native app on iOS. A native tweak loads a JavaScript bundle before Discord starts, and plugins patch Discord from there. Superseded by Unbound.",
+		description: 'The first mod for Discord on iOS, adding plugins and themes.',
 		language: 'TypeScript',
 		url: 'https://github.com/enmity-mod',
 		icon: Puzzle,
@@ -36,7 +35,7 @@ const otherWork: OtherWork[] = [
 	},
 	{
 		name: 'trove',
-		description: 'Local semantic search for your notes, on-device with llama.cpp and EmbeddingGemma.',
+		description: 'Semantic search over your notes using powerful local models.',
 		language: 'Rust',
 		url: github('trove'),
 		icon: Library,
