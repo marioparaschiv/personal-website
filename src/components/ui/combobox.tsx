@@ -1,6 +1,6 @@
 import { Combobox as Kobalte, type ComboboxListboxOptions } from '@kobalte/core/combobox';
-import { Check, ChevronDown } from 'lucide-solid';
 import { createMemo, createSignal, For, type JSX } from 'solid-js';
+import { Check, ChevronDown } from 'lucide-solid';
 
 import { cn } from '~/utils';
 
@@ -154,9 +154,11 @@ function Combobox<T>(props: ComboboxProps<T>) {
 					// Pressing an option would blur the input; Kobalte then refocuses it after picking, and
 					// focus-to-open reopens the list for a frame before closing it again.
 					onMouseDown={(event) => event.preventDefault()}
+					// `animation-duration-*`, not `duration-*`: the latter also sets a transition on every
+					// property, so the transform origin Floating UI sets after mount slid across the zoom-in.
 					class={cn(
 						'z-50 bg-neutral-950 shadow-[0_24px_48px_-12px_rgb(0_0_0/0.75)] border border-white/15 w-64 origin-(--kb-combobox-content-transform-origin)',
-						'data-expanded:animate-in data-expanded:fade-in-0 data-expanded:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 duration-150 motion-reduce:animate-none',
+						'data-expanded:animate-in data-expanded:fade-in-0 data-expanded:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 animation-duration-150 motion-reduce:animate-none',
 					)}
 				>
 					<Kobalte.Listbox<T>
