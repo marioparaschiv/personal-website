@@ -84,11 +84,16 @@ function Combobox<T>(props: ComboboxProps<T>) {
 	};
 
 	// Kobalte can't scroll rows that aren't mounted, so a virtualized list scrolls the focused key
-	// into view itself (on open and on arrow keys).
+	// into view itself (on open and on arrow keys). Hovering also moves focus, but a row under the
+	// pointer is left where it is so the list never scrolls on its own near the edges.
 	const scrollToItem = (key: string) => {
 		const index = items?.().getItem(key)?.index;
 
 		if (!listbox || index === undefined) return;
+
+		const row = listbox.querySelector(`[data-key="${CSS.escape(key)}"]`);
+
+		if (row?.matches(':hover')) return;
 
 		const top = LIST_PADDING + index * ROW_HEIGHT;
 		const bottom = top + ROW_HEIGHT + LIST_PADDING;
