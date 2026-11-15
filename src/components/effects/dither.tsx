@@ -186,6 +186,9 @@ function Dither(props: DitherProps) {
 			preserveDrawingBuffer: true,
 			camera: { position: [0, 0, 6] },
 		});
+
+		if (!three) return;
+
 		const { scene, camera, renderer } = three;
 
 		const waveUniforms = {

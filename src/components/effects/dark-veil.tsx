@@ -11,6 +11,7 @@ import { Show } from 'solid-js/web';
 import * as THREE from 'three';
 
 import { createThreeCanvas } from './create-three-canvas';
+import { mountDarkVeilFallback } from './dark-veil-cpu';
 
 type DarkVeilContextValue = {
 	hueShift: () => number | null;
@@ -167,6 +168,19 @@ function DarkVeil(props: DarkVeilProps) {
 
 	onMount(() => {
 		const three = createThreeCanvas(container, { dpr: 1, camera: { position: [0, 0, 6] } });
+
+		if (!three) {
+			const fallback = mountDarkVeilFallback(container, {
+				target: props.target,
+				speed,
+				warpAmount,
+			});
+
+			onCleanup(() => fallback?.dispose());
+
+			return;
+		}
+
 		const { scene, camera, renderer } = three;
 
 		const uniforms = {

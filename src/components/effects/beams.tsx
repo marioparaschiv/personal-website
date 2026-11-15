@@ -3,6 +3,7 @@ import { onCleanup, onMount } from 'solid-js';
 import * as THREE from 'three';
 
 import { createThreeCanvas } from './create-three-canvas';
+import { mountBeamsFallback } from './beams-cpu';
 
 type UniformValue = THREE.IUniform<unknown> | unknown;
 
@@ -240,6 +241,24 @@ function Beams(props: BeamsProps) {
 			dpr: [1, 2],
 			camera: { position: [0, 0, 20], fov: 30 },
 		});
+
+		if (!three) {
+			const fallback = mountBeamsFallback(container, {
+				beamWidth,
+				beamHeight,
+				beamNumber,
+				speed,
+				scale,
+				rotation,
+				noiseIntensity,
+			});
+
+			container.style.opacity = '1';
+			onCleanup(() => fallback?.dispose());
+
+			return;
+		}
+
 		const { scene, renderer } = three;
 
 		const camera = new THREE.PerspectiveCamera(

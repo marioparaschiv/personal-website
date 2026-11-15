@@ -33,14 +33,48 @@ function resolveDevicePixelRatio(dpr: number | [number, number] | undefined): nu
 	return Math.min(Math.max(deviceDpr, dpr[0]), dpr[1]);
 }
 
-function createThreeCanvas(container: HTMLElement, options: ThreeCanvasOptions = {}): ThreeCanvas {
+let webglSupport: boolean | undefined;
+
+// With hardware acceleration off, Chrome no longer falls back to SwiftShader, so context creation
+// fails and three.js throws. Probing first lets callers switch to a CPU fallback without that error.
+function hasWebGL(): boolean {
+	if (webglSupport !== undefined) return webglSupport;
+
+	const probe = document.createElement('canvas');
+	const gl = probe.getContext('webgl2') ?? probe.getContext('webgl');
+
+	webglSupport = gl !== null;
+	gl?.getExtension('WEBGL_lose_context')?.loseContext();
+
+	return webglSupport;
+}
+
+function createRenderer(options: ThreeCanvasOptions): THREE.WebGLRenderer | null {
+	if (!hasWebGL()) return null;
+
+	try {
+		return new THREE.WebGLRenderer({
+			antialias: options.antialias ?? false,
+			preserveDrawingBuffer: options.preserveDrawingBuffer ?? false,
+		});
+	} catch {
+		webglSupport = false;
+
+		return null;
+	}
+}
+
+function createThreeCanvas(
+	container: HTMLElement,
+	options: ThreeCanvasOptions = {},
+): ThreeCanvas | null {
+	const renderer = createRenderer(options);
+
+	if (!renderer) return null;
+
 	const { width, height } = container.getBoundingClientRect();
 	const devicePixelRatio = resolveDevicePixelRatio(options.dpr);
 
-	const renderer = new THREE.WebGLRenderer({
-		antialias: options.antialias ?? false,
-		preserveDrawingBuffer: options.preserveDrawingBuffer ?? false,
-	});
 	renderer.setPixelRatio(devicePixelRatio);
 	renderer.setSize(width, height);
 
@@ -94,7 +128,7 @@ function createThreeCanvas(container: HTMLElement, options: ThreeCanvasOptions =
 		frameId = requestAnimationFrame(tick);
 	}
 
-	function dispose() {
+	const dispose = () => {
 		cancelAnimationFrame(frameId);
 
 		observer.disconnect();
@@ -103,7 +137,7 @@ function createThreeCanvas(container: HTMLElement, options: ThreeCanvasOptions =
 		if (canvas.parentElement) {
 			canvas.parentElement.removeChild(canvas);
 		}
-	}
+	};
 
 	return { scene, camera, renderer, timer, startLoop, dispose };
 }
